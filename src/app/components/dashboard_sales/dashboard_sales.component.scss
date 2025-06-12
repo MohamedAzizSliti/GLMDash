@@ -1,0 +1,166 @@
+// Tracking Charts Section Styles
+.tracking-charts {
+  .card {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+
+    &:hover {
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      transform: translateY(-2px);
+    }
+
+    &.transparent-chart {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+
+      .card-header {
+        background: rgba(248, 249, 250, 0.8);
+        backdrop-filter: blur(5px);
+      }
+
+      .card-body {
+        background: transparent;
+      }
+    }
+
+    .card-header {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-bottom: 1px solid #dee2e6;
+      padding: 1rem 1.25rem;
+
+      .card-title {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #495057;
+        display: flex;
+        align-items: center;
+
+        i {
+          color: #0da487;
+          font-size: 1.2rem;
+        }
+      }
+    }
+
+    .card-body {
+      padding: 1.5rem;
+      background: #fff;
+    }
+  }
+
+  // Responsive adjustments
+  @media (max-width: 768px) {
+    .card {
+      margin-bottom: 1rem;
+      
+      .card-header {
+        padding: 0.75rem 1rem;
+        
+        .card-title {
+          font-size: 1rem;
+        }
+      }
+      
+      .card-body {
+        padding: 1rem;
+      }
+    }
+  }
+}
+
+// Dashboard tiles enhancements
+.dashboard-tiles {
+  .card-tiles {
+    &.donation-tile {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      color: white;
+
+      .icon-box {
+        background: rgba(255, 255, 255, 0.2);
+        
+        i {
+          color: white;
+        }
+      }
+
+      h6, h3, small {
+        color: white !important;
+      }
+    }
+
+    small {
+      display: block;
+      margin-top: 0.25rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+
+      &.text-success {
+        color: #28a745 !important;
+      }
+
+      &.text-info {
+        color: #17a2b8 !important;
+      }
+
+      &.text-primary {
+        color: #007bff !important;
+      }
+
+      &.text-warning {
+        color: #ffc107 !important;
+      }
+
+      &.text-muted {
+        color: #6c757d !important;
+      }
+    }
+
+    h3 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    h6 {
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
+}
+
+// Chart specific styles
+.apx-chart {
+  .apexcharts-title-text {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: #495057 !important;
+  }
+
+  .apexcharts-legend-text {
+    color: #6c757d !important;
+    font-size: 13px !important;
+  }
+
+  .apexcharts-tooltip {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1px solid #dee2e6 !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
+  }
+
+  .apexcharts-canvas {
+    background: transparent !important;
+  }
+
+  .apexcharts-gridlines-horizontal,
+  .apexcharts-gridlines-vertical {
+    stroke: rgba(0, 0, 0, 0.05) !important;
+  }
+}

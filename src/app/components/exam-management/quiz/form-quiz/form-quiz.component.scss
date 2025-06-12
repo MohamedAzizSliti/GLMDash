@@ -1,0 +1,79 @@
+.question-card {
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.question-card:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
+}
+
+.card-header {
+  border-bottom: 2px solid #e9ecef;
+}
+
+.input-group-text {
+  min-width: 45px;
+  justify-content: center;
+}
+
+.form-check-lg .form-check-input {
+  width: 1.5em;
+  height: 1.5em;
+  margin-top: 0.125em;
+}
+
+.form-check-lg .form-check-label {
+  font-size: 1.1em;
+  padding-left: 0.5em;
+}
+
+.btn-group .btn {
+  border-radius: 0.375rem;
+  margin-right: 0.25rem;
+}
+
+.btn-group .btn:last-child {
+  margin-right: 0;
+}
+
+.invalid-feedback {
+  display: block;
+}
+
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+.badge {
+  font-size: 0.75em;
+}
+
+.border-bottom {
+  border-bottom-width: 2px !important;
+}
+
+.text-muted {
+  font-size: 0.875em;
+}
+
+.alert {
+  border-radius: 0.5rem;
+}
+
+.card {
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

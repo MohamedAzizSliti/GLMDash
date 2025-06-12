@@ -1,0 +1,26 @@
+<app-page-wrapper [gridClass]="'col-sm-12'" [title]="'vehicles'">
+    <div class="d-flex flex-wrap gap-2" button *hasPermission="'vehicle.create'">
+        <a href="javascript:void(0)" class="align-items-center btn btn-outline me-2" (click)="CSVModal.openModal()">
+            <i class="ri-upload-2-line"></i> {{ 'Import' | translate }}
+        </a>
+        <a href="javascript:void(0)" class="align-items-center btn btn-outline me-2" (click)="export()">
+            <i class="ri-download-2-line"></i> {{ 'Export' | translate }}
+        </a>
+        <a [routerLink]="['/vehicle/create']" class="align-items-center btn btn-theme d-flex">
+            <i class="ri-add-line"></i> {{ 'add_vehicle' | translate }}
+        </a>
+    </div>
+    <app-table
+        [tableConfig]="tableConfig"
+        [hasCheckbox]="true"
+        [hasDuplicate]="true"
+        (tableChanged)="onTableChange($event)"
+        (rowClicked)="edit($event)"
+        (action)="onActionClicked($event)">
+    </app-table>
+</app-page-wrapper>
+
+<app-import-csv-modal
+    [module]="'product'"
+    #csvModal>
+</app-import-csv-modal>

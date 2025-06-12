@@ -1,0 +1,16 @@
+.map {
+  flex: 1;
+  height: 500px;
+  width: 100%;
+  background-color: transparent;
+  opacity: 0;
+  transition: opacity 150ms ease-in;
+}
+
+.map.visible {
+  opacity: 1;
+}
+#address {
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}

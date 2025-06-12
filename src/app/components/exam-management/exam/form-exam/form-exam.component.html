@@ -1,0 +1,421 @@
+<div class="card">
+    <div class="card-header bg-success text-white">
+        <h4 class="mb-0">
+            <i class="fas fa-graduation-cap me-2"></i>
+            {{ type === 'add' ? 'Créer un Examen' : 'Modifier l\'Examen' }}
+        </h4>
+    </div>
+    <div class="card-body">
+        <!-- Basic Information Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h5 class="text-success border-bottom pb-2 mb-3">
+                    <i class="fas fa-info-circle me-2"></i>Informations Générales
+                </h5>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="form-group mb-3"> 
+                    <label class="form-label fw-bold" for="categoryInput">
+                        <i class="fas fa-book me-1"></i>Cours *
+                    </label>
+                    <select id="categoryInput" 
+                            class="form-select" 
+                            [class.is-invalid]="hasError('course_id')"
+                            [(ngModel)]="examen.course_id">
+                        <option value="">Sélectionner un cours</option>
+                        <ng-container *ngFor="let course of courses; let i = index">
+                            <option [value]="course.id">{{course.title}}</option>
+                        </ng-container>
+                    </select>
+                    <div class="invalid-feedback" *ngIf="hasError('course_id')">
+                        {{getErrorMessage('course_id')}}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label for="titleInput" class="form-label fw-bold">
+                        <i class="fas fa-heading me-1"></i>Titre de l'Examen *
+                    </label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="titleInput" 
+                           placeholder="Entrez le titre de l'examen"
+                           [class.is-invalid]="hasError('title')"
+                           [(ngModel)]="examen.title">
+                    <div class="invalid-feedback" *ngIf="hasError('title')">
+                        {{getErrorMessage('title')}}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label for="durationInput" class="form-label fw-bold">
+                        <i class="fas fa-clock me-1"></i>Durée *
+                        <small class="text-muted">(en minutes)</small>
+                    </label>
+                    <input type="number" 
+                           min="1" 
+                           class="form-control" 
+                           id="durationInput" 
+                           placeholder="Ex: 120"
+                           [class.is-invalid]="hasError('duration')"
+                           [(ngModel)]="examen.duration">
+                    <div class="invalid-feedback" *ngIf="hasError('duration')">
+                        {{getErrorMessage('duration')}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scoring Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h5 class="text-success border-bottom pb-2 mb-3">
+                    <i class="fas fa-star me-2"></i>Configuration des Points
+                </h5>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="perQuestionMarkInput" class="form-label fw-bold">
+                        <i class="fas fa-plus-circle me-1"></i>Points par Question *
+                    </label>
+                    <input type="number" 
+                           min="1" 
+                           class="form-control" 
+                           id="perQuestionMarkInput" 
+                           placeholder="Ex: 5"
+                           [class.is-invalid]="hasError('mark_per_question')"
+                           [(ngModel)]="examen.mark_per_question">
+                    <div class="invalid-feedback" *ngIf="hasError('mark_per_question')">
+                        {{getErrorMessage('mark_per_question')}}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="passMarkInput" class="form-label fw-bold">
+                        <i class="fas fa-check-circle me-1"></i>Points de Passage *
+                    </label>
+                    <input type="number" 
+                           min="1" 
+                           class="form-control" 
+                           id="passMarkInput" 
+                           placeholder="Ex: 50"
+                           [class.is-invalid]="hasError('pass_marks')"
+                           [(ngModel)]="examen.pass_marks">
+                    <div class="invalid-feedback" *ngIf="hasError('pass_marks')">
+                        {{getErrorMessage('pass_marks')}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Questions Section -->
+        <div class="col-12">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h5 class="text-success mb-0">
+                    <i class="fas fa-list-ul me-2"></i>Questions
+                    <span class="badge bg-secondary ms-2">{{examen.questions.length}}</span>
+                </h5>
+                <div class="btn-group">
+                    <button type="button" 
+                            class="btn btn-outline-primary" 
+                            (click)="addMcqQuestionItem()"
+                            [disabled]="isSubmitting">
+                        <i class="fas fa-plus me-1"></i>QCM
+                    </button>
+                    <button type="button" 
+                            class="btn btn-outline-success" 
+                            (click)="addBinaryChoiceQuestionItem()"
+                            [disabled]="isSubmitting">
+                        <i class="fas fa-plus me-1"></i>Vrai/Faux
+                    </button>
+                    <button type="button" 
+                            class="btn btn-outline-warning" 
+                            (click)="addPromptQuestionItem()"
+                            [disabled]="isSubmitting">
+                        <i class="fas fa-plus me-1"></i>Question Ouverte
+                    </button>
+                </div>
+            </div>
+
+            <div class="alert alert-danger" *ngIf="hasError('questions')">
+                <i class="fas fa-exclamation-triangle me-2"></i>{{getErrorMessage('questions')}}
+            </div>
+
+            <div id="questionsWrapper">
+                <ng-container *ngFor="let question of examen.questions; let i = index">
+                    <!-- Multiple Choice Question -->
+                    <ng-container *ngIf="question.question_type == 'multiple_choice'">
+                        <div class="card mb-4 question-card" [ngClass]="getQuestionTypeBorderClass(question.question_type)">
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0" [ngClass]="getQuestionTypeTextClass(question.question_type)">
+                                    <i [class]="getQuestionTypeIcon(question.question_type) + ' me-2'"></i>
+                                    Question {{i + 1}} - {{getQuestionTypeLabel(question.question_type)}}
+                                </h6>
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-danger" 
+                                        *ngIf="examen.questions.length > 1"
+                                        (click)="removeQuestionItem(i)"
+                                        [disabled]="isSubmitting">
+                                    <i class="fas fa-trash me-1"></i>Supprimer
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">
+                                        <i class="fas fa-question me-1"></i>Texte de la Question *
+                                    </label>
+                                    <textarea class="form-control" 
+                                              rows="2"
+                                              placeholder="Entrez votre question ici..."
+                                              [class.is-invalid]="hasError('question_' + i)"
+                                              [(ngModel)]="question.question_text"></textarea>
+                                    <div class="invalid-feedback" *ngIf="hasError('question_' + i)">
+                                        {{getErrorMessage('question_' + i)}}
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-danger" *ngIf="hasError('options_' + i)">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>{{getErrorMessage('options_' + i)}}
+                                </div>
+
+                                <div class="alert alert-danger" *ngIf="hasError('correct_' + i)">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>{{getErrorMessage('correct_' + i)}}
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-primary text-white fw-bold">A</span>
+                                            <input class="form-control" 
+                                                   type="text" 
+                                                   placeholder="Option A"
+                                                   [(ngModel)]="question.option_1.text">
+                                            <div class="input-group-text">
+                                                <input class="form-check-input mt-0" 
+                                                       type="checkbox"
+                                                       [(ngModel)]="question.option_1.is_correct">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-primary text-white fw-bold">B</span>
+                                            <input class="form-control" 
+                                                   type="text" 
+                                                   placeholder="Option B"
+                                                   [(ngModel)]="question.option_2.text">
+                                            <div class="input-group-text">
+                                                <input class="form-check-input mt-0" 
+                                                       type="checkbox"
+                                                       [(ngModel)]="question.option_2.is_correct">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-primary text-white fw-bold">C</span>
+                                            <input class="form-control" 
+                                                   type="text" 
+                                                   placeholder="Option C"
+                                                   [(ngModel)]="question.option_3.text">
+                                            <div class="input-group-text">
+                                                <input class="form-check-input mt-0" 
+                                                       type="checkbox"
+                                                       [(ngModel)]="question.option_3.is_correct">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-primary text-white fw-bold">D</span>
+                                            <input class="form-control" 
+                                                   type="text" 
+                                                   placeholder="Option D"
+                                                   [(ngModel)]="question.option_4.text">
+                                            <div class="input-group-text">
+                                                <input class="form-check-input mt-0" 
+                                                       type="checkbox"
+                                                       [(ngModel)]="question.option_4.is_correct">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Cochez la case à droite pour marquer une option comme correcte
+                                </small>
+                            </div>
+                        </div>
+                    </ng-container>
+
+                    <!-- True/False Question -->
+                    <ng-container *ngIf="question.question_type == 'single_choice'">
+                        <div class="card mb-4 question-card" [ngClass]="getQuestionTypeBorderClass(question.question_type)">
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0" [ngClass]="getQuestionTypeTextClass(question.question_type)">
+                                    <i [class]="getQuestionTypeIcon(question.question_type) + ' me-2'"></i>
+                                    Question {{i + 1}} - {{getQuestionTypeLabel(question.question_type)}}
+                                </h6>
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-danger" 
+                                        *ngIf="examen.questions.length > 1"
+                                        (click)="removeQuestionItem(i)"
+                                        [disabled]="isSubmitting">
+                                    <i class="fas fa-trash me-1"></i>Supprimer
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">
+                                        <i class="fas fa-question me-1"></i>Texte de la Question *
+                                    </label>
+                                    <textarea class="form-control" 
+                                              rows="2"
+                                              placeholder="Entrez votre question vrai/faux ici..."
+                                              [class.is-invalid]="hasError('question_' + i)"
+                                              [(ngModel)]="question.question_text"></textarea>
+                                    <div class="invalid-feedback" *ngIf="hasError('question_' + i)">
+                                        {{getErrorMessage('question_' + i)}}
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-danger" *ngIf="hasError('correct_' + i)">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>{{getErrorMessage('correct_' + i)}}
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check form-check-lg">
+                                            <input class="form-check-input" 
+                                                   type="radio" 
+                                                   value="option_1"
+                                                   [name]="'question_' + i"
+                                                   [(ngModel)]="question.correct_option">
+                                            <label class="form-check-label fw-bold text-success">
+                                                <i class="fas fa-check me-2"></i>Vrai
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check form-check-lg">
+                                            <input class="form-check-input" 
+                                                   type="radio" 
+                                                   value="option_2"
+                                                   [name]="'question_' + i"
+                                                   [(ngModel)]="question.correct_option">
+                                            <label class="form-check-label fw-bold text-danger">
+                                                <i class="fas fa-times me-2"></i>Faux
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-container>
+
+                    <!-- Open-ended Question (Prompt) -->
+                    <ng-container *ngIf="question.question_type == 'prompt'">
+                        <div class="card mb-4 question-card" [ngClass]="getQuestionTypeBorderClass(question.question_type)">
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0" [ngClass]="getQuestionTypeTextClass(question.question_type)">
+                                    <i [class]="getQuestionTypeIcon(question.question_type) + ' me-2'"></i>
+                                    Question {{i + 1}} - {{getQuestionTypeLabel(question.question_type)}}
+                                </h6>
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-danger" 
+                                        *ngIf="examen.questions.length > 1"
+                                        (click)="removeQuestionItem(i)"
+                                        [disabled]="isSubmitting">
+                                    <i class="fas fa-trash me-1"></i>Supprimer
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">
+                                        <i class="fas fa-question me-1"></i>Texte de la Question *
+                                    </label>
+                                    <textarea class="form-control" 
+                                              rows="3"
+                                              placeholder="Entrez votre question ouverte ici... Ex: Expliquez les avantages de..."
+                                              [class.is-invalid]="hasError('question_' + i)"
+                                              [(ngModel)]="question.question_text"></textarea>
+                                    <div class="invalid-feedback" *ngIf="hasError('question_' + i)">
+                                        {{getErrorMessage('question_' + i)}}
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">
+                                                <i class="fas fa-sort-numeric-up me-1"></i>Nombre Maximum de Mots *
+                                            </label>
+                                            <input type="number" 
+                                                   min="10" 
+                                                   max="1000"
+                                                   class="form-control" 
+                                                   placeholder="Ex: 100"
+                                                   [class.is-invalid]="hasError('max_words_' + i)"
+                                                   [(ngModel)]="question.max_words">
+                                            <div class="invalid-feedback" *ngIf="hasError('max_words_' + i)">
+                                                {{getErrorMessage('max_words_' + i)}}
+                                            </div>
+                                            <small class="text-muted">Minimum 10 mots, maximum 1000 mots</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-lightbulb me-2"></i>
+                                            <strong>Question Ouverte</strong><br>
+                                            Les étudiants pourront répondre librement à cette question.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">
+                                        <i class="fas fa-clipboard-check me-1"></i>Réponse Modèle (Optionnel)
+                                    </label>
+                                    <textarea class="form-control" 
+                                              rows="4"
+                                              placeholder="Entrez une réponse modèle pour aider à l'évaluation..."
+                                              [class.is-invalid]="hasError('prompt_' + i)"
+                                              [(ngModel)]="question.prompt_answer"></textarea>
+                                    <div class="invalid-feedback" *ngIf="hasError('prompt_' + i)">
+                                        {{getErrorMessage('prompt_' + i)}}
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Cette réponse servira de guide pour l'évaluation manuelle
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-container>
+                </ng-container>
+            </div>
+        </div>
+
+        <!-- Submit Section -->
+        <div class="row mt-4">
+            <div class="col-12 text-end">
+                <button type="button" 
+                        class="btn btn-success btn-lg px-5" 
+                        (click)="submit()"
+                        [disabled]="isSubmitting">
+                    <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+                    <i class="fas fa-save me-2" *ngIf="!isSubmitting"></i>
+                    {{ isSubmitting ? 'Enregistrement...' : (type === 'add' ? 'Créer l\'Examen' : 'Modifier l\'Examen') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

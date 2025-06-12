@@ -1,0 +1,99 @@
+<form class="theme-form theme-form-2 mega-form" [formGroup]="form" (ngSubmit)="submit()">
+
+
+    <app-form-fields [labelClass]="'form-label-title col-sm-2 mb-0'"  [gridClass]="'col-sm-10'" [label]="'is_global'" [for]="'is_first_order'" [required]="false">
+        <div class="form-check form-switch ps-0">
+            <label class="switch">
+                <input type="checkbox" id="is_first_order" formControlName="isGlobal" >
+                <span class="switch-state"></span>
+            </label>
+            <p class="help-text" >{{'help_text_geofence_global' | translate }}</p>
+        </div>
+    </app-form-fields>
+
+    <app-form-fields [labelClass]="'form-label-title col-sm-2 mb-0'" [gridClass]="'col-sm-10'"
+                     [label]="'vehicles'" [for]="'exclude_product'" [required]="false"
+    >
+
+        <select2
+                class="custom-select"
+                [disabled]="form.controls['isGlobal'].value"
+                [data]="(vehicle$ | async)?.length ? (vehicle$ | async) : []"
+                [placeholder]="'select_vehicle' | translate" formControlName="vehicle_id">
+        </select2>
+    </app-form-fields>
+
+    <app-form-fields [label]="'name' | translate" [for]="'name'" [required]="true">
+        <input class="form-control" type="text" placeholder="{{ 'enter_name' | translate }}" name="name" formControlName="name">
+        <div class="invalid-feedback" *ngIf="form.controls['name'].touched && form.controls['name'].errors?.['required']">
+            {{ 'name_is_required' | translate }}
+        </div>
+    </app-form-fields>
+
+    <app-form-fields [label]="'adresse' | translate" [for]="'value'" [required]="false"   >
+        <div class="input-group">
+            <input class="form-control" type="text"  id="address" formControlName="adresse" placeholder="{{ 'adresse' | translate }}" #adresseInput>
+            <span class="input-group-text" style="height: 46px;cursor: pointer" (click)="getCurrentLocation()" title="📍 Utiliser ma position actuelle" >
+                <i class="ri-crosshair-2-line"></i>
+            </span>
+        </div>
+
+    </app-form-fields>
+
+    <app-form-fields [labelClass]="'form-label-title col-sm-2 mb-0'"  [gridClass]="'col-sm-10'" [label]="'is_visible'" [for]="'is_visible'" [required]="false">
+        <div class="form-check form-switch ps-0">
+            <label class="switch">
+                <input type="checkbox" id="is_visible" formControlName="isVisible" >
+                <span class="switch-state"></span>
+            </label>
+            <p class="help-text" >{{'help_text_is_visible' | translate }}</p>
+        </div>
+    </app-form-fields>
+
+    <app-form-fields [labelClass]="'form-label-title col-sm-2 mb-0'"  [gridClass]="'col-sm-10'" [label]="'zoom_in'" [for]="'zoom_in'" [required]="false">
+        <div class="form-check form-switch ps-0">
+            <label class="switch">
+                <input type="checkbox" id="zoom_in" formControlName="zoom_in" >
+                <span class="switch-state"></span>
+            </label>
+            <p class="help-text" >{{'help_text_zoom_in' | translate }}</p>
+        </div>
+    </app-form-fields>
+
+    <app-form-fields [labelClass]="'form-label-title col-sm-2 mb-0'"
+                     [gridClass]="'col-sm-10'" [label]="'actions'"
+                     [for]="'vehicle_featured'" [required]="false">
+        <div class="form-check form-switch ps-0">
+            <app-advanced-dropdown
+                    style="width: 88%"
+                    [position]="'bottom'"
+                    [selectedOption]="selectedActions"
+                    [options]="[{id:1,value:'alerter',name:'Alerter'},{id:2,value:'coupe_moteur',name:'Couper Moteur'}]"
+                    (selectedItem)="selectMthodeNotif($event)">
+            </app-advanced-dropdown>
+        </div>
+    </app-form-fields>
+
+
+    <google-map
+           #googleMap
+            height="600px"
+            width="100%"
+            [center]="center"
+            [zoom]="zoom"
+            [options]="options"
+            *ngIf="visible"
+    >
+        <map-marker [position]="center"></map-marker>
+        <map-polygon *ngIf="polygon" [paths]="polygon.paths" [options]="polygon.options"></map-polygon>
+        <map-circle *ngIf="circle" [center]="circle.center" [radius]="circle.radius" [options]="circle.options"></map-circle>
+
+    </google-map>
+
+
+    <div class="border-up-class mt-4">
+        <app-button [id]="'attribute_btn'">
+            {{ type == 'create' ? 'Save Geofence' : 'Update Geofence' }}
+        </app-button>
+    </div>
+</form>

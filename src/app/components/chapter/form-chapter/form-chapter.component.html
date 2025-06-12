@@ -1,0 +1,150 @@
+<div class="row">
+        <div class="col-md-12 my-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12 col-xxl-5 mb-3 mb-xxl-0">
+                            <label class="form-label" for="categoryInput">Course Title <span class="text-danger fw-bold">*</span></label>
+                            <select id="categoryInput" class="form-select form-control" name="course_id" aria-hidden="true" [(ngModel)]="chapter.course_id">
+                                <ng-container *ngFor="let course  of courses ;let i = index">
+                                    <option [value]="course.id" >
+                                        {{course.title}}</option>
+                                </ng-container>
+                            </select>
+                        </div>
+                        <div class="col-6 col-xxl-5">
+                            <label for="chapterTitle" class="form-label">Chapter Title <span class="text-danger fw-bold">*</span></label>
+                            <input type="text" class="form-control" id="chapterTitle" name="title" value="" placeholder="Enter chapter title" [(ngModel)]="chapter.title">
+                        </div>
+                        <div class="col-6 col-xxl-2">
+                            <label for="chapterSequence" class="form-label">Serial Number <span class="text-danger fw-bold">*</span></label>
+                            <input type="text" class="form-control" id="chapterSequence" name="serial_number" value="2"  [(ngModel)]="chapter.serial_number">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 mb-1">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="m-0 p-0">
+                        Contents</h6>
+                </div>
+            </div>
+        </div>
+        <ng-container *ngFor="let content  of chapter.contents;let i = index">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="startContentBody">
+                            <div id="contentsWrapper">
+                                <div id="content1" class="row d-flex align-items-center border-primary border-2 p-3 rounded-4 mb-5 content-item">
+                                    <div class="col-6 mb-3">
+                                        <div class="d-flex align-items-center gap-3">
+
+                                            <div class="isFree">
+                                                <div class="form-check">
+                                                    <input name="contents[1][is_free]" class="form-check-input" type="checkbox" id="isFree1" [(ngModel)]="chapter.contents[i].is_free">
+                                                    <label class="form-check-label" for="isFree1">Free
+                                                        Content</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-6 my-3 d-flex justify-content-end align-items-center">
+                                        <button type="button" class="btn btn-outline-danger" (click)="removeContentItem(i)" *ngIf="i > 0">
+                                            Remove Content -</button>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="">
+                                            <label class="form-label">Content Title</label>
+                                            <input type="text" name="contents[1][title]" class="form-control" placeholder="Enter content title" [(ngModel)]="chapter.contents[i].title">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-1">
+                                        <div class="">
+                                            <label class="form-label">Sequence</label>
+                                            <input type="number"  class="form-control"   [(ngModel)]="chapter.contents[i].serial_number">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-2">
+                                        <div class="">
+                                            <label for="fileInput" class="form-label">Select File
+                                                Type</label>
+                                            <select class="form-select form-control videoTypeSelect" name="contents[1][video_type]" data-key="1"  [(ngModel)]="chapter.contents[i].video_type">
+                                                <option value="0">----Select Option----</option>
+                                                <option value="upload" selected="">
+                                                    Upload Files</option>
+                                                <option value="link">
+                                                    Cloud Link</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 " id="uploadSection1" *ngIf="chapter.contents[i].video_type ==  'upload'">
+                                        <div class="">
+                                            <h4 class="form-label">Upload File (Document, Audio, Video, Image)
+                                            </h4>
+                                            <label for="formFileUpload" class="w-100 border rounded-3 d-flex align-items-center gap-2">
+                                                <label for="formFileImage" class="w-100 border rounded-3">
+                                                    <div class="d-flex justify-content-center align-items-center gap-2 p-3" style="width: 160px; background-color: #0c141e">
+                                                    <span>
+                                                        Choose a file
+                                                    </span>
+                                                        <img src="/assets/images/file-plus.svg">
+                                                    </div>
+                                                </label>
+                                                <div>
+                                                    <span id="fileLinkPreview1"></span>
+                                                </div>
+                                            </label>
+                                            <input id="formFileUpload" class="form-control form-control-lg" type="file" accept="*/*" (change)="onFileSelected($event,i)"  onchange="document.getElementById('fileLinkPreview1').innerHTML = window.URL.createObjectURL(this.files[0])"  >
+                                        </div>
+                                    </div>
+
+                                    <div class="col-3 hidden" id="linkSection1" *ngIf="chapter.contents[i].video_type ==  'link'">
+                                        <div class="">
+                                            <label for="fileInput" class="form-label">Upload Link (only
+                                                embed link)</label>
+                                            <input name="contents[1][link]" type="text" class="form-control" value=""  [(ngModel)]="chapter.contents[i].media_link" placeholder="Enter Youtube Embed Video Links" >
+                                        </div>
+                                    </div>
+
+                                    <div class="col-3 hidden" id="duration1" *ngIf="chapter.contents[i].video_type ==  'link'">
+                                        <div class="">
+                                            <label for="fileInput" class="form-label">Set Duration</label>
+                                            <input name="contents[1][duration]" type="number" class="form-control"   [(ngModel)]="chapter.contents[i].duration" placeholder="Enter Link Duration">
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+
+    </div>
+    <div class="row">
+        <div class="col-md-12 mt-2">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                             <app-button [id]="'category_btn'"  (click)="submit()">
+                                {{ (type == 'create' ? 'Create' : 'update') | translate }}
+                            </app-button>
+                        </div>
+                        <div class="col-md-6 d-flex justify-content-end">
+                            <button type="button" class="btn btn-outline-primary"  (click)="addContent()">Add New Content Item +</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

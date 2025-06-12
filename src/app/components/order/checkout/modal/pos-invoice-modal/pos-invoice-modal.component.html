@@ -1,0 +1,64 @@
+<ng-template #posInvoice let-modal>
+    <div class="modal-body">
+        <div class="ticket">
+            <div class="title-text text-center">
+                <h4>{{(setting$ | async)?.general?.site_name ? (setting$ | async)?.general?.site_name : 'Logo Here'}}</h4>
+            </div>
+            <ul class="centered">
+                <li>Order Number: {{ order?.order_number }}</li>
+                <li>Date: <span>{{ order.created_at | date: 'dd MMM yyyy hh:mm:a'}}</span></li>
+                <li>Address: <span>
+                    {{ order?.shipping_address?.street }}
+                    {{ order?.shipping_address?.city }} {{ order?.shipping_address?.state?.name }} {{
+                    order?.shipping_address?.country?.name }}
+                    {{ order?.shipping_address?.pincode }}
+                </span></li>
+                <li>Email: <span>{{ order?.consumer?.email }}</span></li>
+                <li>Phone: <span>{{ order?.shipping_address?.phone }}</span></li>
+                <li>Customer: <span>{{order?.consumer?.name}}</span></li>
+            </ul>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th class="quantity">Qty.</th>
+                        <th class="description">Product name</th>
+                        <th class="price">Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let product of order?.products">
+                        <td class="quantity">{{ product?.pivot?.quantity }}</td>
+                        <td class="description">{{ product?.pivot?.variation ? product?.pivot?.variation?.name : product?.name }}</td>
+                        <td class="price">{{ product?.pivot?.subtotal }}</td>
+                    </tr>
+                    <tr class="total-box">
+                        <td colspan="2" class="text-end description">Total:</td>
+                        <td class="price">{{ (order?.amount ? order?.amount : 0) | currencySymbol }}</td>
+                    </tr>
+                    <tr class="total-box">
+                        <td colspan="2" class="text-end description">Shipping:</td>
+                        <td class="price">{{ (order?.shipping_total ? order?.shipping_total : 0) | currencySymbol
+                        }}</td>
+                    </tr>
+                    <tr class="total-box">
+                        <td colspan="2" class="text-end description">Tax:</td>
+                        <td class="price">{{ (order?.tax_total ? order?.tax_total : 0) | currencySymbol }}</td>
+                    </tr>
+                    <tr class="total-box">
+                        <td colspan="2" class="text-end description">Discount:</td>
+                        <td class="price">{{ (order?.coupon_total_discount ? order?.coupon_total_discount : 0) | currencySymbol }}</td>
+                    </tr>
+                    <tr class="total-box">
+                        <td colspan="2" class="text-end description">Grand Total:</td>
+                        <td class="price">{{ (order?.total ? order?.total : 0) | currencySymbol }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="text-point">Thank You For Shopping.</p>
+            <div class="modal-btn-group d-flex align-items-center gap-2 justify-content-center">
+                <button class="btn btn-sm btn-animation theme-bg-color" onclick="window.print();">Print</button>
+                <button class="btn btn-sm btn-outline" (click)="modal.dismiss('Cross click')">Cancel</button>
+            </div>
+        </div>
+    </div>
+</ng-template>

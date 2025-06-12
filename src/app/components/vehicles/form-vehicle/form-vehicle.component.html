@@ -1,0 +1,739 @@
+<form class="theme-form theme-form-2 mega-form" [formGroup]="form" (ngSubmit)="submit()">
+    <div class="vertical-tabs">
+        <div class="row">
+            <div class="col-xl-3 col-lg-4">
+                <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav-pills" orientation="vertical"  (activeIdChange)="onTabChange($event)">
+                    <li ngbNavItem="general" id="general" [class.is-invalid]="tabError == 'general'">
+                        <a ngbNavLink><i class="ri-settings-line"></i>{{ 'general' | translate }}</a>
+                        <ng-template ngbNavContent>
+                            <div class="tab" tab="general">
+
+                                <div formGroupName="voiture">
+                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"
+                                                     [gridClass]="'col-sm-9'" [label]="'title'" [for]="'name'"
+                                                     [required]="true">
+                                        <input class="form-control" id="name" type="text"
+                                               placeholder="{{ 'Enter vehicle name'}}" formControlName="title">
+                                        <div class="invalid-feedback"
+                                             *ngIf="form.get['voiture.title']?.touched && form.get['voiture.title'].errors?.['required']">
+                                            {{ 'name_is_required' | translate }}
+                                        </div>
+                                    </app-form-fields>
+<!--                                    *ngIf="(setting$ | async )?.activation?.multivendor && ((user$ | async)?.role?.name === 'admin')"-->
+                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"
+                                                     [gridClass]="'col-sm-9'" [label]="'categories'" [for]="'store'"
+                                                     [required]="true"
+                                                    >
+                                        <select2
+                                                class="custom-select"
+                                                [placeholder]="'select_category' | translate"
+                                                [data]="categoryVehicle?.length ? categoryVehicle : []"
+                                                formControlName="type"
+                                                noResultMessage="{{ 'no_data_found' | translate }}"
+                                                id="store_id"
+                                                resettable>
+                                        </select2>
+                                    </app-form-fields>
+                                    <ng-container *ngIf="selectedCategory == 'voiture'">
+                                        <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"
+                                                         [gridClass]="'col-sm-9'" [label]="'Marque'" [for]="'name'"
+                                                         [required]="true">
+                                            <select2
+                                                    class="custom-select"
+                                                    [placeholder]="'select_brand' | translate"
+                                                    [data]="(brands$ | async)?.length ? (brands$ | async) : []"
+                                                    formControlName="brand_id"
+                                                    noResultMessage="{{ 'no_data_found' | translate }}"
+                                                    id="brand_id"
+                                                    (update)="selectBrand($event)"
+                                                    resettable>
+                                            </select2>
+                                        </app-form-fields>
+                                        <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"
+                                                         [gridClass]="'col-sm-9'" [label]="'Model'" [for]="'name'"
+                                                         [required]="true">
+
+                                            <select2
+                                                    class="custom-select"
+                                                    [placeholder]="'select_model' | translate"
+                                                    [data]="(models$ | async)?.length ? (models$ | async) : [] "
+                                                    formControlName="model_id"
+                                                    bindLabel="name"
+                                                    bindValue="id"
+                                                    noResultMessage="{{ 'no_data_found' | translate }}"
+                                                    id="model_id"
+                                                    resettable>
+                                            </select2>
+                                        </app-form-fields>
+                                    </ng-container>
+                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"
+                                                     [gridClass]="'col-sm-9'" [label]="'plate'" [for]="'name'"
+                                                     [required]="true">
+                                        <input class="form-control" id="name" type="text"
+                                               placeholder="{{ 'enter_plate' | translate }}"
+                                               formControlName="immatriculation">
+
+                                    </app-form-fields>
+
+                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"
+                                                     [gridClass]="'col-sm-9'" [label]="'carburant'" [for]="'store'"
+                                                     [required]="true"
+                                                     *ngIf="(setting$ | async )?.activation?.multivendor && ((user$ | async)?.role?.name === 'admin')">
+                                        <select2
+                                                class="custom-select"
+                                                [placeholder]="'select_carburant' | translate"
+                                                [data]="typeCarburant?.length ? typeCarburant : []"
+                                                formControlName="carburant"
+                                                noResultMessage="{{ 'no_data_found' | translate }}"
+                                                id="carburant_id"
+                                                resettable>
+                                        </select2>
+                                    </app-form-fields>
+                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"
+                                                     [gridClass]="'col-sm-9'" [label]="'coso_moy_carburant'" [for]="'name'"
+                                                     [required]="true">
+
+                                        <div class="input-group">
+
+                                            <input class="form-control" id="name" type="text"
+                                                   placeholder="{{ 'coso_moy_carburant_placeholder' | translate}}" formControlName="coso_moy_carburant">
+                                            <span class="input-group-text" style="height: 46px;cursor: pointer" >
+                                               L à 100 Klm
+                                             </span>
+                                        </div>
+
+
+                                        <div class="invalid-feedback"
+                                             *ngIf="form.get['voiture.coso_moy_carburant']?.touched && form.get['voiture.coso_moy_carburant'].errors?.['required']">
+                                            {{ 'name_is_required' | translate }}
+                                        </div>
+                                    </app-form-fields>
+                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"
+                                                     [gridClass]="'col-sm-9'" [label]="'color'" [for]="'store'"
+                                                     [required]="false">
+                                        <select2
+                                                class="custom-select"
+                                                [placeholder]="'select_color' | translate"
+                                                [data]="colors?.length ? colors : []"
+                                                formControlName="color"
+                                                noResultMessage="{{ 'no_data_found' | translate }}"
+                                                id="color"
+                                                resettable>
+                                        </select2>
+                                        <p class="help-text" >{{'help_text_color' | translate }}</p>
+                                    </app-form-fields>
+
+                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"
+                                                     [gridClass]="'col-sm-9'" [label]="'speed_max'" [for]="'speed_max'"
+                                                     [required]="true">
+                                        <div class="input-group">
+
+                                            <input class="form-control" id="name" type="text"
+                                                   placeholder="{{ 'enter_speed_max_vehicule' | translate}}" formControlName="speed_max">
+                                            <span class="input-group-text" style="height: 46px;cursor: pointer" >
+                                               Klm/h
+                                             </span>
+                                        </div>
+                                        <p class="help-text" >{{'enter_speed_max_help_vehicule' | translate }}</p>
+                                    </app-form-fields>
+
+                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"
+                                                     [gridClass]="'col-sm-9'" [label]="'description'"
+                                                     [for]="'description'"
+                                                     [required]="true">
+                                        <div class="custom-editor">
+                                            <ngx-editor-menu [editor]="editor"></ngx-editor-menu>
+                                            <ngx-editor [editor]="editor" [ngModel]="html"
+                                                        [placeholder]="'Type here...'"
+                                                        formControlName="description"></ngx-editor>
+                                            <div class="invalid-feedback"
+                                                 *ngIf="form.get['voiture.description']?.touched && form.get['voiture.description']?.errors?.['required']">
+                                                {{ 'description_is_required' | translate }}
+                                            </div>
+                                        </div>
+                                    </app-form-fields>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </li>
+                    <li ngbNavItem="inventory" id="inventory" [class.is-invalid]="tabError == 'inventory'">
+                        <a ngbNavLink><i class="ri-file-list-line"></i>{{ 'driver' | translate }}</a>
+                        <ng-template ngbNavContent>
+                            <div class="tab" tab="inventory">
+                                <div formGroupName="user">
+                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"
+                                                     [gridClass]="'col-sm-9'" [label]="'name'" [for]="'unit'"
+                                                     [required]="false">
+                                        <input class="form-control" id="unit" type="text"
+                                               placeholder="{{ 'enter_name' | translate }}"
+                                               formControlName="firstname_user">
+                                    </app-form-fields>
+
+                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"
+                                                     [gridClass]="'col-sm-9'" [label]="'phone'" [for]="'phone'"
+                                                     [required]="true">
+                                        <select2 class="custom-select intl-tel-input" [templates]="template"
+                                                 [data]="codes"
+                                                 formControlName="country_code"
+                                                 noResultMessage="{{'no_data_found' | translate }}">
+                                            <ng-template #template let-data="data">
+                                                <div class="country">
+                                                    <div class="flag-box">
+                                                        <div class="iti-flag {{data?.class}}"></div>
+                                                    </div>
+                                                    <span class="dial-code">{{data.code}}</span>
+                                                </div>
+                                            </ng-template>
+                                        </select2>
+                                        <input type="number" class="form-control intl-input-padding"
+                                               formControlName="phone_user"
+                                               placeholder="{{ 'enter_phone' | translate }}" name="phone">
+
+                                    </app-form-fields>
+                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"
+                                                     [gridClass]="'col-sm-9'" [label]="'email'" [for]="'email'"
+                                                     [required]="true">
+                                        <input class="form-control" type="email"
+                                               placeholder="{{ 'enter_email' | translate }}" name="email"
+                                               formControlName="email_user">
+
+                                        <div class="invalid-feedback"
+                                             *ngIf="form.get['user.email_user']?.touched && form.get['user.email_user']?.errors?.['email_user']">
+                                            {{ 'enter_valid_email' | translate }}
+                                        </div>
+                                    </app-form-fields>
+
+                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"
+                                                     [gridClass]="'col-sm-9'" [label]="'jeune_conducteur'"
+                                                     [for]="'is_sale_enable'" [required]="false">
+                                        <div class="form-check form-switch ps-0">
+                                            <label class="switch">
+                                                <input type="checkbox" id="is_sale_enable"
+                                                       formControlName="is_young_driver">
+                                                <span class="switch-state"></span>
+                                            </label>
+                                        </div>
+                                    </app-form-fields>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </li>
+                    <li ngbNavItem="setup" id="setup" [class.is-invalid]="tabError == 'setup'">
+                        <a ngbNavLink><i class="ri-tools-line"></i>{{ 'device' | translate }}</a>
+                        <ng-template ngbNavContent>
+                            <div class="tab" tab="setup">
+                                <div formGroupName="device">
+                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"
+                                                     [gridClass]="'col-sm-9'" [label]="'imei'" [for]="'categories'"
+                                                     [required]="true">
+                                        <input class="form-control" id="unit" type="text"
+                                               placeholder="{{ 'enter_imei' | translate }}" formControlName="imei">
+                                    </app-form-fields>
+
+                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"
+                                                     [gridClass]="'col-sm-9'" [label]="'phone'" [for]="'phone'"
+                                                     [required]="true">
+
+                                        <select2 class="custom-select intl-tel-input" [templates]="template"
+                                                 [data]="codes"
+                                                 formControlName="country_code"
+                                                 noResultMessage="{{'no_data_found' | translate }}">
+                                            <ng-template #template let-data="data">
+                                                <div class="country">
+                                                    <div class="flag-box">
+                                                        <div class="iti-flag {{data?.class}}"></div>
+                                                    </div>
+                                                    <span class="dial-code">{{data.code}}</span>
+                                                </div>
+                                            </ng-template>
+                                        </select2>
+                                        <input type="number" class="form-control intl-input-padding"
+                                               formControlName="phone_device"
+                                               placeholder="{{ 'enter_phone' | translate }}" name="phone">
+                                        <div class="invalid-feedback"
+                                             *ngIf="form.get('device.phone_device')?.touched && form.get('device.phone_device')?.errors?.['pattern']">
+                                            {{ 'phone_number_is_invalid' | translate }}
+                                        </div>
+                                        <div class="invalid-feedback" *ngIf="form.get('device.phone_device')?.touched  && form.get('device.phone_device')?.errors?.['required']">
+
+                                            {{ 'phone_is_required' | translate }}
+                                        </div>
+                                    </app-form-fields>
+
+                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"
+                                                     [gridClass]="'col-sm-9'" [label]="'operator'" [for]="'categories'"
+                                                     [required]="true">
+                                        <input class="form-control" id="unit" type="text"
+                                               placeholder="{{ 'enter_operator' | translate }}"
+                                               formControlName="operator">
+                                    </app-form-fields>
+
+
+
+                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"
+                                                     [gridClass]="'col-sm-9'" [label]="'groupes'" [for]="'tags'"
+                                                     [required]="false">
+                                        <app-advanced-dropdown
+                                                [position]="'bottom'"
+                                                [selectedOption]="selectedTags"
+                                                [options]="(tag$ | async )?.data?.length ? (tag$ | async )?.data : []"
+                                                (selectedItem)="selectTagItem($event)">
+                                        </app-advanced-dropdown>
+                                    </app-form-fields>
+
+
+                                    <app-form-fields [label]="'adresse' | translate" [for]="'value'" [required]="false"   [labelClass]="'form-label-title col-sm-3 mb-0'"   [gridClass]="'col-sm-9'"  >
+                                        <div class="input-group">
+                                            <input class="form-control" type="text"  id="address" formControlName="adresse" placeholder="{{ 'adresse' | translate }}" #adresseInput>
+                                            <span class="input-group-text" style="height: 46px;cursor: pointer" (click)="getCurrentLocation()" title="📍 Utiliser ma position actuelle" >
+                                            <i class="ri-crosshair-2-line"></i>
+                                             </span>
+                                        </div>
+                                        <p class="help-text" >{{'help_text_first_position' | translate }}</p>
+                                    </app-form-fields>
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                        </div>
+                                        <div class="col-md-9">
+
+                                        </div>
+                                    </div>
+
+                                    <google-map
+                                        #googleMap
+                                        height="600px"
+                                        width="100%"
+                                        [center]="center"
+                                        [zoom]="zoom"
+                                        [options]="options"
+                                        *ngIf="visible"
+                                    >
+                                        <map-marker [position]="center"
+                                                    [draggable]="true"
+                                                    (mapDragend)="onMarkerDragEnd(  $event)"
+                                                    [options]="{ draggable: true }"
+                                                #marker
+                                        ></map-marker>
+                                    </google-map>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </li>
+                    <li ngbNavItem="images" id="images" [class.is-invalid]="tabError == 'images'">
+                        <a ngbNavLink><i class="ri-image-line"></i>{{ 'images' | translate }}</a>
+                        <ng-template ngbNavContent>
+                            <div class="tab" tab="images">
+                                <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"
+                                                 [gridClass]="'col-sm-9'" [label]="'thumbnail'"
+                                                 [for]="'vehicle_thumbnail_id'" [required]="false">
+                                    <app-image-upload
+                                            [multipleImage]="false"
+                                            [image]="(vehicle$ | async)?.vehicle_thumbnail"
+                                            [helpText]="'*Upload image size 600x600px recommended'"
+                                            (selectedFiles)="selectThumbnail($event)">
+                                    </app-image-upload>
+                                </app-form-fields>
+                                <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"
+                                                 [gridClass]="'col-sm-9'" [label]="'images'"
+                                                 [for]="'vehicle_galleries_id'" [required]="false">
+                                    <app-image-upload
+                                            [multipleImage]="true"
+                                            [images]="(vehicle$ | async)?.vehicle_galleries"
+                                            [helpText]="'*Upload image size 600x600px recommended'"
+                                            (selectedFiles)="selectImages($event)">
+                                    </app-image-upload>
+                                </app-form-fields>
+                                <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"
+                                                 [gridClass]="'col-sm-9'" [label]="'Size Chart'"
+                                                 [for]="'size_chart_image_id'" [required]="false">
+                                    <app-image-upload
+                                            [multipleImage]="false"
+                                            [image]="(vehicle$ | async)?.size_chart_image"
+                                            [helpText]="'*Upload an image showcasing the size chart tailored for fashion vehicles. A table format image is suggested for easy reference.'"
+                                            (selectedFiles)="selectSizeImage($event)">
+                                    </app-image-upload>
+                                </app-form-fields>
+                            </div>
+                        </ng-template>
+                    </li>
+
+                    <li ngbNavItem="status" id="status" [class.is-invalid]="tabError == 'status'">
+                        <a ngbNavLink><i class="ri-checkbox-circle-line"></i>{{ 'notifications' | translate }}</a>
+                        <ng-template ngbNavContent>
+                            <div class="tab" tab="status">
+                                <div formGroupName="notifications">
+                                    <ng-container *ngIf="defaultParmsNotif">
+                                        <ng-container *ngFor="let notifParam  of defaultParmsNotif?.methodes_notif | keyvalue;let i = index">
+                                            <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"
+                                                             [gridClass]="'col-sm-9'" [label]="notifParam['key'] "
+                                                             [for]="'vehicle_featured'" [required]="false">
+                                                <div class="form-check form-switch ps-0">
+                                                    <label class="switch">
+                                                        <input type="checkbox" id="vehicle_featured" (change)="changeCheckBox($event,notifParam['key'])"
+                                                               formControlName="{{notifParam.key}}">
+                                                        <span class="switch-state"></span>
+                                                    </label>
+                                                    <app-advanced-dropdown
+                                                            style="width: 88%"
+                                                            [position]="'bottom'"
+                                                            [selectedOption]="notifParam?.value['methods']"
+                                                            [hidden]="methodNotif['result_cmd']['disabled']"
+                                                            [options]="notification_methode?.length ? notification_methode : []"
+                                                            (selectedItem)="selectMthodeNotif($event,notifParam.key)">
+                                                    </app-advanced-dropdown>
+                                                </div>
+                                            </app-form-fields>
+                                        </ng-container>
+
+                                    </ng-container>
+
+
+<!--                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"-->
+<!--                                                     [gridClass]="'col-sm-9'" [label]="'online_sate'"-->
+<!--                                                     [for]="'safe_checkout'" [required]="false">-->
+<!--                                        <div class="form-check form-switch ps-0">-->
+<!--                                            <label class="switch">-->
+<!--                                                <input type="checkbox" id="safe_checkout" formControlName="deviceOnline" (change)="changeCheckBox($event,'deviceOnline')">-->
+<!--                                                <span class="switch-state"></span>-->
+<!--                                            </label>-->
+<!--                                            <app-advanced-dropdown-->
+<!--                                                    style="width: 88%"-->
+<!--                                                    [position]="'bottom'"-->
+<!--                                                    [selectedOption]="methodNotif['deviceOnline']['methods']"-->
+<!--                                                    [hidden]="methodNotif['deviceOnline']['disabled']"-->
+<!--                                                    [options]="notification_methode?.length ? notification_methode : []"-->
+<!--                                                    (selectedItem)="selectMthodeNotif($event,'deviceOnline')">-->
+<!--                                            </app-advanced-dropdown>-->
+<!--                                        </div>-->
+<!--                                    </app-form-fields>-->
+<!--                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"-->
+<!--                                                     [gridClass]="'col-sm-9'" [label]="'offline_state'"-->
+<!--                                                     [for]="'secure_checkout'" [required]="false">-->
+<!--                                        <div class="form-check form-switch ps-0">-->
+<!--                                            <label class="switch">-->
+<!--                                                <input type="checkbox" id="secure_checkout" (change)="changeCheckBox($event,'deviceOffline')"-->
+<!--                                                       formControlName="deviceOffline">-->
+<!--                                                <span class="switch-state"></span>-->
+<!--                                            </label>-->
+<!--                                            <app-advanced-dropdown-->
+<!--                                                    style="width: 88%"-->
+<!--                                                    [position]="'bottom'"-->
+<!--                                                    [hidden]="methodNotif['deviceOffline']['disabled']"-->
+<!--                                                    [selectedOption]="methodNotif['deviceOffline']['methods']"-->
+<!--                                                    [options]="notification_methode?.length ? notification_methode : []"-->
+<!--                                                    (selectedItem)="selectMthodeNotif($event,'deviceOffline')">-->
+<!--                                            </app-advanced-dropdown>-->
+<!--                                        </div>-->
+<!--                                    </app-form-fields>-->
+<!--                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"-->
+<!--                                                     [gridClass]="'col-sm-9'" [label]="'inactif_device'"-->
+<!--                                                     [for]="'social_share'" [required]="false">-->
+<!--                                        <div class="form-check form-switch ps-0">-->
+<!--                                            <label class="switch">-->
+<!--                                                <input type="checkbox" id="social_share"-->
+<!--                                                       formControlName="deviceIdle" (change)="changeCheckBox($event,'deviceIdle')">-->
+<!--                                                <span class="switch-state"></span>-->
+<!--                                            </label>-->
+<!--                                            <app-advanced-dropdown-->
+<!--                                                    style="width: 88%"-->
+<!--                                                    [position]="'bottom'"-->
+<!--                                                    [hidden]="methodNotif['deviceIdle']['disabled']"-->
+<!--                                                    [selectedOption]="methodNotif['deviceIdle']['methods']"-->
+<!--                                                    [options]="notification_methode?.length ? notification_methode : []"-->
+<!--                                                    (selectedItem)="selectMthodeNotif($event,'deviceIdle')">-->
+<!--                                            </app-advanced-dropdown>-->
+<!--                                        </div>-->
+<!--                                    </app-form-fields>-->
+<!--                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"-->
+<!--                                                     [gridClass]="'col-sm-9'" [label]="'device_movement'"-->
+<!--                                                     [for]="'encourage_order'" [required]="false">-->
+<!--                                        <div class="form-check form-switch ps-0">-->
+<!--                                            <label class="switch">-->
+<!--                                                <input type="checkbox" id="encourage_order" (change)="changeCheckBox($event,'deviceMoving')"-->
+<!--                                                       formControlName="deviceMoving">-->
+<!--                                                <span class="switch-state"></span>-->
+<!--                                            </label>-->
+<!--                                            <app-advanced-dropdown-->
+<!--                                                    style="width: 88%"-->
+<!--                                                    [position]="'bottom'"-->
+<!--                                                    [hidden]="methodNotif['deviceMoving']['disabled']"-->
+<!--                                                    [selectedOption]="methodNotif['deviceMoving']['methods']"-->
+<!--                                                    [options]="notification_methode?.length ? notification_methode : []"-->
+<!--                                                    (selectedItem)="selectMthodeNotif($event,'deviceMoving')">-->
+<!--                                            </app-advanced-dropdown>-->
+<!--                                        </div>-->
+<!--                                    </app-form-fields>-->
+<!--                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"-->
+<!--                                                     [gridClass]="'col-sm-9'" [label]="'device_stopped'"-->
+<!--                                                     [for]="'encourage_view'" [required]="false">-->
+<!--                                        <div class="form-check form-switch ps-0">-->
+<!--                                            <label class="switch">-->
+<!--                                                <input type="checkbox" id="encourage_view" (change)="changeCheckBox($event,'deviceStopped')"-->
+<!--                                                       formControlName="deviceStopped">-->
+<!--                                                <span class="switch-state"></span>-->
+<!--                                            </label>-->
+<!--                                            <app-advanced-dropdown-->
+<!--                                                    style="width: 88%"-->
+<!--                                                    [position]="'bottom'"-->
+<!--                                                    [hidden]="methodNotif['deviceStopped']['disabled']"-->
+<!--                                                    [selectedOption]="methodNotif['deviceStopped']['methods']"-->
+<!--                                                    [options]="notification_methode?.length ? notification_methode : []"-->
+<!--                                                    (selectedItem)="selectMthodeNotif($event,'deviceStopped')">-->
+<!--                                            </app-advanced-dropdown>-->
+<!--                                        </div>-->
+<!--                                    </app-form-fields>-->
+<!--                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"-->
+<!--                                                     [gridClass]="'col-sm-9'" [label]="'deppased_vitesse'"-->
+<!--                                                     [for]="'is_trending'"-->
+<!--                                                     [required]="false">-->
+<!--                                        <div class="form-check form-switch ps-0">-->
+<!--                                            <label class="switch">-->
+<!--                                                <input type="checkbox" id="is_trending" (change)="changeCheckBox($event,'deviceOverspeed')"-->
+<!--                                                       formControlName="deviceOverspeed">-->
+<!--                                                <span class="switch-state"></span>-->
+<!--                                            </label>-->
+<!--                                            <app-advanced-dropdown-->
+<!--                                                    style="width: 88%"-->
+<!--                                                    [position]="'bottom'"-->
+<!--                                                    [hidden]="methodNotif['deviceOverspeed']['disabled']"-->
+<!--                                                    [selectedOption]="methodNotif['deviceOverspeed']['methods']"-->
+<!--                                                    [options]="notification_methode?.length ? notification_methode : []"-->
+<!--                                                    (selectedItem)="selectMthodeNotif($event,'deviceOverspeed')">-->
+<!--                                            </app-advanced-dropdown>-->
+<!--                                        </div>-->
+<!--                                    </app-form-fields>-->
+<!--                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"-->
+<!--                                                     [gridClass]="'col-sm-9'" [label]="'fuel_fail'" [for]="'return'"-->
+<!--                                                     [required]="false">-->
+<!--                                        <div class="form-check form-switch ps-0">-->
+<!--                                            <label class="switch">-->
+<!--                                                <input type="checkbox" id="return" formControlName="deviceFuelDrop" (change)="changeCheckBox($event,'deviceFuelDrop')">-->
+<!--                                                <span class="switch-state"></span>-->
+<!--                                            </label>-->
+<!--                                            <app-advanced-dropdown-->
+<!--                                                    style="width: 88%"-->
+<!--                                                    [position]="'bottom'"-->
+<!--                                                    [hidden]="methodNotif['deviceFuelDrop']['disabled']"-->
+<!--                                                    [selectedOption]="methodNotif['deviceFuelDrop']['methods']"-->
+<!--                                                    [options]="notification_methode?.length ? notification_methode : []"-->
+<!--                                                    (selectedItem)="selectMthodeNotif($event,'deviceFuelDrop')">-->
+<!--                                            </app-advanced-dropdown>-->
+<!--                                        </div>-->
+<!--                                    </app-form-fields>-->
+<!--                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"-->
+<!--                                                     [gridClass]="'col-sm-9'" [label]="'fuel_recharge'" [for]="'status'"-->
+<!--                                                     [required]="false">-->
+<!--                                        <div class="form-check form-switch ps-0">-->
+<!--                                            <label class="switch">-->
+<!--                                                <input type="checkbox" id="status" formControlName="deviceFuelIncrease"  (change)="changeCheckBox($event,'deviceFuelIncrease')">-->
+<!--                                                <span class="switch-state"></span>-->
+<!--                                            </label>-->
+<!--                                            <app-advanced-dropdown-->
+<!--                                                    style="width: 88%"-->
+<!--                                                    [position]="'bottom'"-->
+<!--                                                    [hidden]="methodNotif['deviceFuelIncrease']['disabled']"-->
+<!--                                                    [selectedOption]="methodNotif['deviceFuelIncrease']['methods']"-->
+<!--                                                    [options]="notification_methode?.length ? notification_methode : []"-->
+<!--                                                    (selectedItem)="selectMthodeNotif($event,'deviceFuelIncrease')">-->
+<!--                                            </app-advanced-dropdown>-->
+<!--                                        </div>-->
+<!--                                    </app-form-fields>-->
+<!--                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"-->
+<!--                                                     [gridClass]="'col-sm-9'" [label]="'geofence_enter'"-->
+<!--                                                     [hidden]="methodNotif['geofenceEnter']['disabled']"-->
+<!--                                                     [for]="'status'"-->
+<!--                                                     [required]="false">-->
+<!--                                        <div class="form-check form-switch ps-0">-->
+<!--                                            <label class="switch">-->
+<!--                                                <input type="checkbox" id="status" formControlName="geofenceEnter" (change)="changeCheckBox($event,'geofenceEnter')" >-->
+<!--                                                <span class="switch-state"></span>-->
+<!--                                            </label>-->
+<!--                                            <app-advanced-dropdown-->
+<!--                                                    style="width: 88%"-->
+<!--                                                    [position]="'bottom'"-->
+<!--                                                    [hidden]="methodNotif['geofenceEnter']['disabled']"-->
+<!--                                                    [selectedOption]="methodNotif['geofenceEnter']['methods']"-->
+<!--                                                    [options]="notification_methode?.length ? notification_methode : []"-->
+<!--                                                    (selectedItem)="selectMthodeNotif($event,'geofenceEnter')">-->
+<!--                                            </app-advanced-dropdown>-->
+<!--                                        </div>-->
+<!--                                    </app-form-fields>-->
+<!--                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"-->
+<!--                                                     [gridClass]="'col-sm-9'" [label]="'geofenceExit'"-->
+<!--                                                     [for]="'status'"-->
+<!--                                                     [required]="false">-->
+<!--                                        <div class="form-check form-switch ps-0">-->
+<!--                                            <label class="switch">-->
+<!--                                                <input type="checkbox" id="status" formControlName="geofenceExit" (change)="changeCheckBox($event,'geofenceExit')" >-->
+<!--                                                <span class="switch-state"></span>-->
+<!--                                            </label>-->
+<!--                                            <app-advanced-dropdown-->
+<!--                                                    style="width: 88%"-->
+<!--                                                    [position]="'bottom'"-->
+<!--                                                    [hidden]="methodNotif['geofenceExit']['disabled']"-->
+<!--                                                    [selectedOption]="methodNotif['geofenceExit']['methods']"-->
+<!--                                                    [options]="notification_methode?.length ? notification_methode : []"-->
+<!--                                                    (selectedItem)="selectMthodeNotif($event,'geofenceExit')">-->
+<!--                                            </app-advanced-dropdown>-->
+<!--                                        </div>-->
+<!--                                    </app-form-fields>-->
+<!--                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"-->
+<!--                                                     [gridClass]="'col-sm-9'" [label]="'alarm'" [for]="'status'"-->
+<!--                                                     [required]="false">-->
+<!--                                        <div class="form-check form-switch ps-0">-->
+<!--                                            <label class="switch">-->
+<!--                                                <input type="checkbox" id="status" formControlName="deviceAlarm" (change)="changeCheckBox($event,'deviceAlarm')" >-->
+<!--                                                <span class="switch-state"></span>-->
+<!--                                            </label>-->
+<!--                                            <app-advanced-dropdown-->
+<!--                                                    style="width: 88%"-->
+<!--                                                    [position]="'bottom'"-->
+<!--                                                    [hidden]="methodNotif['deviceAlarm']['disabled']"-->
+<!--                                                    [selectedOption]="methodNotif['deviceAlarm']['methods']"-->
+<!--                                                    [options]="notification_methode?.length ? notification_methode : []"-->
+<!--                                                    (selectedItem)="selectMthodeNotif($event,'deviceAlarm')">-->
+<!--                                            </app-advanced-dropdown>-->
+<!--                                        </div>-->
+<!--                                    </app-form-fields>-->
+<!--                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"-->
+<!--                                                     [gridClass]="'col-sm-9'" [label]="'contact_mis'" [for]="'status'"-->
+<!--                                                     [required]="false">-->
+<!--                                        <div class="form-check form-switch ps-0">-->
+<!--                                            <label class="switch">-->
+<!--                                                <input type="checkbox" id="status" formControlName="contact_mis" (change)="changeCheckBox($event,'contact_mis')" >-->
+<!--                                                <span class="switch-state"></span>-->
+<!--                                            </label>-->
+<!--                                            <app-advanced-dropdown-->
+<!--                                                    style="width: 88%"-->
+<!--                                                    [position]="'bottom'"-->
+<!--                                                    [hidden]="methodNotif['contact_mis']['disabled']"-->
+<!--                                                    [selectedOption]="methodNotif['contact_mis']['methods']"-->
+<!--                                                    [options]="notification_methode?.length ? notification_methode : []"-->
+<!--                                                    (selectedItem)="selectMthodeNotif($event,'contact_mis')">-->
+<!--                                            </app-advanced-dropdown>-->
+<!--                                        </div>-->
+<!--                                    </app-form-fields>-->
+<!--                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"-->
+<!--                                                     [gridClass]="'col-sm-9'" [label]="'contact_coupe'" [for]="'status'"-->
+<!--                                                     [required]="false">-->
+<!--                                        <div class="form-check form-switch ps-0">-->
+<!--                                            <label class="switch">-->
+<!--                                                <input type="checkbox" id="status" formControlName="contact_coupe" (change)="changeCheckBox($event,'contact_coupe')"  >-->
+<!--                                                <span class="switch-state"></span>-->
+<!--                                            </label>-->
+<!--                                            <app-advanced-dropdown-->
+<!--                                                    style="width: 88%"-->
+<!--                                                    [position]="'bottom'"-->
+<!--                                                    [hidden]="methodNotif['contact_coupe']['disabled']"-->
+<!--                                                    [selectedOption]="methodNotif['contact_coupe']['methods']"-->
+<!--                                                    [options]="notification_methode?.length ? notification_methode : []"-->
+<!--                                                    (selectedItem)="selectMthodeNotif($event,'contact_coupe')">-->
+<!--                                            </app-advanced-dropdown>-->
+<!--                                        </div>-->
+<!--                                    </app-form-fields>-->
+<!--                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"-->
+<!--                                                     [gridClass]="'col-sm-9'" [label]="'entretien_requis'"-->
+<!--                                                     [for]="'status'"-->
+<!--                                                     [required]="false">-->
+<!--                                        <div class="form-check form-switch ps-0">-->
+<!--                                            <label class="switch">-->
+<!--                                                <input type="checkbox" id="status" formControlName="deviceMaintenance" (change)="changeCheckBox($event,'deviceMaintenance')" >-->
+<!--                                                <span class="switch-state"></span>-->
+<!--                                            </label>-->
+<!--                                            <app-advanced-dropdown-->
+<!--                                                    style="width: 88%"-->
+<!--                                                    [position]="'bottom'"-->
+<!--                                                    [hidden]="methodNotif['deviceMaintenance']['disabled']"-->
+<!--                                                    [selectedOption]="methodNotif['deviceMaintenance']['methods']"-->
+<!--                                                    [options]="notification_methode?.length ? notification_methode : []"-->
+<!--                                                    (selectedItem)="selectMthodeNotif($event,'deviceMaintenance')">-->
+<!--                                            </app-advanced-dropdown>-->
+<!--                                        </div>-->
+<!--                                    </app-form-fields>-->
+<!--                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"-->
+<!--                                                     [gridClass]="'col-sm-9'" [label]="'received_msg'" [for]="'status'"-->
+<!--                                                     [required]="false">-->
+<!--                                        <div class="form-check form-switch ps-0">-->
+<!--                                            <label class="switch">-->
+<!--                                                <input type="checkbox" id="status" formControlName="received_msg" (change)="changeCheckBox($event,'received_msg')"  >-->
+<!--                                                <span class="switch-state"></span>-->
+<!--                                            </label>-->
+<!--                                            <app-advanced-dropdown-->
+<!--                                                    style="width: 88%"-->
+<!--                                                    [position]="'bottom'"-->
+<!--                                                    [hidden]="methodNotif['received_msg']['disabled']"-->
+<!--                                                    [selectedOption]="methodNotif['received_msg']['methods']"-->
+<!--                                                    [options]="notification_methode?.length ? notification_methode : []"-->
+<!--                                                    (selectedItem)="selectMthodeNotif($event,'received_msg')">-->
+<!--                                            </app-advanced-dropdown>-->
+<!--                                        </div>-->
+<!--                                    </app-form-fields>-->
+<!--                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"-->
+<!--                                                     [gridClass]="'col-sm-9'" [label]="'driver_change'" [for]="'status'"-->
+<!--                                                     [required]="false">-->
+<!--                                        <div class="form-check form-switch ps-0">-->
+<!--                                            <label class="switch">-->
+<!--                                                <input type="checkbox" id="status" formControlName="driver_change"  (change)="changeCheckBox($event,'driver_change')" >-->
+<!--                                                <span class="switch-state"></span>-->
+<!--                                            </label>-->
+<!--                                            <app-advanced-dropdown-->
+<!--                                                    style="width: 88%"-->
+<!--                                                    [position]="'bottom'"-->
+<!--                                                    [hidden]="methodNotif['driver_change']['disabled']"-->
+<!--                                                    [selectedOption]="methodNotif['driver_change']['methods']"-->
+<!--                                                    [options]="notification_methode?.length ? notification_methode : []"-->
+<!--                                                    (selectedItem)="selectMthodeNotif($event,'driver_change')">-->
+<!--                                            </app-advanced-dropdown>-->
+<!--                                        </div>-->
+<!--                                    </app-form-fields>-->
+<!--                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"-->
+<!--                                                     [gridClass]="'col-sm-9'" [label]="'remorquage'" [for]="'status'"-->
+<!--                                                     [required]="false">-->
+<!--                                        <div class="form-check form-switch ps-0">-->
+<!--                                            <label class="switch">-->
+<!--                                                <input type="checkbox" id="status" formControlName="remorquage"   (change)="changeCheckBox($event,'remorquage')">-->
+<!--                                                <span class="switch-state"></span>-->
+<!--                                            </label>-->
+<!--                                            <app-advanced-dropdown-->
+<!--                                                    style="width: 88%"-->
+<!--                                                    [position]="'bottom'"-->
+<!--                                                    [hidden]="methodNotif['remorquage']['disabled']"-->
+<!--                                                    [selectedOption]="methodNotif['remorquage']['methods']"-->
+<!--                                                    [options]="notification_methode?.length ? notification_methode : []"-->
+<!--                                                    (selectedItem)="selectMthodeNotif($event,'remorquage')">-->
+<!--                                            </app-advanced-dropdown>-->
+<!--                                        </div>-->
+<!--                                    </app-form-fields>-->
+<!--                                    <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'"-->
+<!--                                                     [gridClass]="'col-sm-9'" [label]="'derapage_fort'" [for]="'status'"-->
+<!--                                                     [required]="false">-->
+<!--                                        <div class="form-check form-switch ps-0">-->
+<!--                                            <label class="switch">-->
+<!--                                                <input type="checkbox" id="status" formControlName="derapage_fort"   (change)="changeCheckBox($event,'derapage_fort')">-->
+<!--                                                <span class="switch-state"></span>-->
+<!--                                            </label>-->
+<!--                                            <app-advanced-dropdown-->
+<!--                                                    style="width: 88%"-->
+<!--                                                    [position]="'bottom'"-->
+<!--                                                    [hidden]="methodNotif['derapage_fort']['disabled']"-->
+<!--                                                    [selectedOption]="methodNotif['derapage_fort']['methods']"-->
+<!--                                                    [options]="notification_methode?.length ? notification_methode : []"-->
+<!--                                                    (selectedItem)="selectMthodeNotif($event,'derapage_fort')">-->
+<!--                                            </app-advanced-dropdown>-->
+<!--                                        </div>-->
+<!--                                    </app-form-fields>-->
+                                </div>
+                            </div>
+                        </ng-template>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-xl-7 col-lg-8">
+                <div [ngbNavOutlet]="nav"></div>
+            </div>
+        </div>
+        <app-button [id]="'vehicle_btn'">
+            {{ (type == 'create' ? 'save_vehicle' : 'update_vehicle') | translate }}
+        </app-button>
+    </div>
+</form>
