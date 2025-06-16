@@ -1,760 +1,266 @@
-import { Component, Inject, ViewChild, Renderer2 } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
-import { Router } from '@angular/router';
-import { NgbRatingConfig } from '@ng-bootstrap/ng-bootstrap';
-import { Observable } from 'rxjs';
-import { Store, Select } from '@ngxs/store';
-import { Select2Data, Select2UpdateEvent } from 'ng-select2-component';
-import {
-  ChartComponent,
-  ApexAxisChartSeries,
-  ApexChart,
-  ApexXAxis,
-  ApexDataLabels,
-  ApexTooltip,
-  ApexStroke,
-  ApexFill,
-  ApexTitleSubtitle,
-  ApexGrid,
-  ApexResponsive,
-  ApexLegend,
-  ApexMarkers,
-  ApexYAxis
-} from "ng-apexcharts";
-import { Params } from '../../shared/interface/core.interface';
-import { GetOrders } from '../../shared/action/order.action';
-import { TableClickedAction, TableConfig } from "../../shared/interface/table.interface";
-import { Order, OrderModel } from '../../shared/interface/order.interface';
-import { OrderState } from '../../shared/state/order.state';
-import { GetReviews } from '../../shared/action/review.action';
-import { ReviewModel } from '../../shared/interface/review.interface';
-import { ReviewState } from '../../shared/state/review.state';
-import { Product, ProductModel } from "../../shared/interface/product.interface";
-import { ProductState } from '../../shared/state/product.state';
-import { GetProducts } from '../../shared/action/product.action';
-import { BlogModel } from "../../shared/interface/blog.interface";
-import { BlogState } from '../../shared/state/blog.state';
-import { GetBlogs } from '../../shared/action/blog.action';
-import { CategoryState } from '../../shared/state/category.state';
-import { GetCategories } from '../../shared/action/category.action';
-import { GetRevenueChart, GetStatisticsCount } from '../../shared/action/dashboard.action';
-import { DashboardState } from '../../shared/state/dashboard.state';
-import { RevenueChart, StatisticsCount } from '../../shared/interface/dashboard.interface';
-import { StoresModel } from '../../shared/interface/store.interface';
-import { StoreState } from '../../shared/state/store.state';
-import { GetStores } from '../../shared/action/store.action';
-import { CurrencySymbolPipe } from './../../shared/pipe/currency-symbol.pipe';
-import { AccountState } from '../../shared/state/account.state';
-import { AccountUser } from '../../shared/interface/account.interface';
-
-export type ChartOptions = {
-  series: ApexAxisChartSeries;
-  chart: ApexChart;
-  xaxis: ApexXAxis;
-  yaxis: ApexYAxis;
-  stroke: ApexStroke;
-  tooltip: ApexTooltip;
-  dataLabels: ApexDataLabels;
-  fill: ApexFill;
-  title: ApexTitleSubtitle;
-  grid: ApexGrid;
-  markers: ApexMarkers;
-  legend: ApexLegend;
-  responsive: ApexResponsive[];
-};
-
-// New chart options for tracking features
-export type PieChartOptions = {
-  series: number[];
-  chart: ApexChart;
-  labels: string[];
-  colors: string[];
-  legend: ApexLegend;
-  responsive: ApexResponsive[];
-  dataLabels: ApexDataLabels;
-};
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Subject, forkJoin } from 'rxjs';
+import { takeUntil, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { ChartComponent } from "ng-apexcharts";
+import { ApiService } from '../../shared/services/api.service';
 
 @Component({
   selector: 'app-dashboard_sales',
   templateUrl: './dashboard_sales.component.html',
-  styleUrls: ['./dashboard_sales.component.scss'],
-  providers: [CurrencySymbolPipe]
+  styleUrls: ['./dashboard_sales.component.scss']
 })
-export class Dashboard_salesComponent {
-
-  @Select(DashboardState.statistics) statistics$: Observable<StatisticsCount>;
-  @Select(DashboardState.revenueChart) revenueChart$: Observable<RevenueChart>;
-  @Select(OrderState.order) order$: Observable<OrderModel>;
-  @Select(ProductState.product) product$: Observable<ProductModel>;
-  @Select(ProductState.topSellingProducts) topProduct$: Observable<Product[]>;
-  @Select(ReviewState.review) review$: Observable<ReviewModel>;
-  @Select(BlogState.blog) blog$: Observable<BlogModel>;
-  @Select(CategoryState.categories) category$: Observable<Select2Data>;
-  @Select(StoreState.store) store$: Observable<StoresModel>;
-  @Select(AccountState.user) user$: Observable<AccountUser>;
-
+export class Dashboard_salesComponent implements OnInit, OnDestroy {
   @ViewChild("chart") chart: ChartComponent;
 
-  public chartOptions: Partial<ChartOptions>;
+  private destroy$ = new Subject<void>();
 
-  // New chart configurations for tracking features
-  public priceTrackingChart: Partial<ChartOptions>;
-  public donationsChart: Partial<ChartOptions>;
-  public teachersChart: Partial<PieChartOptions>;
-  public studentsChart: Partial<ChartOptions>;
+  // Loading states
+  public isLoadingStats: boolean = false;
+  public hasError: boolean = false;
+  public errorMessage: string = '';
 
-  public topProductLoader: boolean = false;
-  public productStockLoader: boolean = false;
-  public topSellerLoader: boolean = false;
+  // Real data properties
+  public enrollmentStatistics: any = null;
+  public revenueSummary: any = null;
+  public monthlyRevenueData: any = null;
 
-  // User statistics
-  public totalUsers: number = 15000000; // 15 million
-  public activeUsers: number = 2450000; // Active users in last 24h
-  public newUsers: number = 12500; // New users this week
-  public totalRoles: number = 3; // Admin, Prof, Étudiant
-  private currentStatistics: StatisticsCount | null = null;
-  
-  // Fake financial data
-  public fakeRevenue: number = 15000; // 15,000 DT
-  public fakeOrders: number = 1250; // Fake orders count
-  public fakeSchools: number = 85; // Fake schools count
+  // Dashboard metrics
+  public totalEnrollments: number = 0;
+  public activeEnrollments: number = 0;
+  public totalRevenue: number = 0;
+  public charityAmount: number = 0;
 
-  public filter: Select2Data = [{
-    value: 'today',
-    label: 'Today',
-  },
-  {
-    value: 'last_week',
-    label: 'Last Week',
-  },
-  {
-    value: 'last_month',
-    label: 'Last Month',
-  },
-  {
-    value: 'this_year',
-    label: 'This Year',
-  }];
+  // Demo data fallback
+  public isDemoMode: boolean = true; // Start with demo mode
 
-  public sellerTableConfig: TableConfig = {
-    columns: [
-      { title: "store_name", dataField: "store_name" },
-      { title: "orders", dataField: "orders_count" },
-      { title: "earning", dataField: "order_amount" },
+  // Chart configurations - Initialize with safe defaults
+  public chartOptions: any = {
+    series: [
+      {
+        name: "Revenue Total",
+        data: [0],
+        color: '#0da487',
+      },
+      {
+        name: "Dons (3%)",
+        data: [0],
+        color: '#FFA53B',
+      },
     ],
-    data: [],
-    total: 0
+    chart: {
+      height: 350,
+      type: "line",
+      zoom: { enabled: false }
+    },
+    dataLabels: { enabled: false },
+    stroke: {
+      curve: 'smooth',
+      width: 4,
+    },
+    grid: {
+      xaxis: { lines: { show: true } },
+      yaxis: { lines: { show: false } }
+    },
+    legend: { show: true },
+    xaxis: {
+      categories: ['Jan']
+    }
   };
 
-  public orderTableConfig: TableConfig = {
-    columns: [
-      { title: "number", dataField: "order_id" },
-      { title: "date", dataField: "created_at", type: "date", date_format: 'dd MMM yyyy' },
-      { title: "name", dataField: "consumer_name" },
-      { title: "amount", dataField: "total", type: 'price' },
-      { title: "payment", dataField: "order_payment_status" }
-    ],
-    rowActions: [
-      { label: "View", actionToPerform: "view", icon: "ri-eye-line", permission: "order.edit" }
-    ],
-    data: [],
-    total: 0
-  };
+  constructor(private apiService: ApiService) {
+    this.initializeCharts();
+    this.enableDemoMode(); // Initialize with demo data
+  }
 
-  public productStockTableConfig: TableConfig = {
-    columns: [
-      { title: "image", dataField: "product_thumbnail", class: 'tbl-image', type: 'image', placeholder: 'assets/images/product.png' },
-      { title: "name",  dataField: "name" },
-      { title: "quantity", dataField: "quantity" },
-      { title: "stock", dataField: "stock" }
-    ],
-    rowActions: [
-      { label: "Edit", actionToPerform: "edit", icon: "ri-pencil-line", permission: "product.edit"  },
-    ],
-    data: [] as Product[],
-    total: 0
-  };
+  ngOnInit(): void {
+    this.loadDashboardData();
+  }
 
-  constructor(private renderer: Renderer2, config: NgbRatingConfig,
-    @Inject(DOCUMENT) private document: Document,
-    private store: Store, private router: Router, currencySymbolPipe: CurrencySymbolPipe) {
-    config.max = 5;
-    config.readonly = true;
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
+  private initializeCharts(): void {
+    // Ensure chartOptions is always defined with safe defaults
     this.chartOptions = {
       series: [
         {
-          name: "Revenue",
-          data: [],
+          name: "Revenue Total",
+          data: [1200, 1800, 2400, 1900, 2800, 3200],
           color: '#0da487',
         },
         {
-          name: "Comission",
-          data: [],
+          name: "Dons (3%)",
+          data: [36, 54, 72, 57, 84, 96],
           color: '#FFA53B',
         },
       ],
       chart: {
         height: 350,
         type: "line",
-        dropShadow: {
-          enabled: true,
-          top: 10,
-          left: 0,
-          blur: 3,
-          color: '#720f1e',
-          opacity: 0.1
-        },
-        zoom: {
-          enabled: false
-        }
+        zoom: { enabled: false }
       },
-      dataLabels: {
-        enabled: false
-      },
-      markers: {
-        strokeWidth: 4,
-        strokeColors: "#ffffff",
-        hover: {
-          size: 9,
-        }
-      },
+      dataLabels: { enabled: false },
       stroke: {
         curve: 'smooth',
-        lineCap: 'butt',
         width: 4,
       },
       grid: {
-        xaxis: {
-          lines: {
-            show: true
-          }
-        },
-        yaxis: {
-          lines: {
-            show: false,
-          }
-        }
+        xaxis: { lines: { show: true } },
+        yaxis: { lines: { show: false } }
       },
-      legend: {
-        show: false,
-      },
-      responsive: [{
-          breakpoint: 1200,
-          options: {
-            grid: {
-              padding: {
-                right: -95,
-              }
-            },
-          },
-        },
-        {
-          breakpoint: 992,
-          options: {
-            grid: {
-              padding: {
-                right: -69,
-              }
-            },
-          },
-        },
-        {
-          breakpoint: 767,
-          options: {
-            chart: {
-              height: 200,
-            }
-          },
-        },
-        {
-          breakpoint: 576,
-          options: {
-            yaxis: {
-              labels: {
-                show: false,
-              },
-            },
-          },
-        }
-      ],
+      legend: { show: true },
       xaxis: {
-        categories: [],
-        range: undefined,
-        axisBorder: {
-          offsetX: 0,
-          show: false,
-        },
-        axisTicks: {
-          show: false,
-        },
-      },
-    }
+        categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun']
+      }
+    };
+  }
 
-    // Revenue & Commision Chart
-    this.revenueChart$.subscribe(revenue => {
-      if(revenue) {
-        this.chartOptions = {
-          series: [
-            {
-              name: "Revenue",
-              data: revenue.revenues,
-              color: '#0da487',
-            },
-            {
-              name: "Comission",
-              data: revenue.commissions,
-              color: '#FFA53B',
-            },
-          ],
-          chart: {
-            height: 350,
-            type: "line",
-            dropShadow: {
-              enabled: true,
-              top: 10,
-              left: 0,
-              blur: 3,
-              color: '#720f1e',
-              opacity: 0.1
-            },
-            zoom: {
-              enabled: false
-            }
-          },
-          dataLabels: {
-            enabled: false
-          },
-          markers: {
-            strokeWidth: 4,
-            strokeColors: "#ffffff",
-            hover: {
-              size: 9,
-            }
-          },
-          stroke: {
-            curve: 'smooth',
-            lineCap: 'butt',
-            width: 4,
-          },
-          grid: {
-            xaxis: {
-              lines: {
-                show: true
-              }
-            },
-            yaxis: {
-              lines: {
-                show: false,
-              }
-            }
-          },
-          legend: {
-            show: false,
-          },
-          responsive: [{
-              breakpoint: 1200,
-              options: {
-                grid: {
-                  padding: {
-                    right: -95,
-                  }
-                },
-              },
-            },
-            {
-              breakpoint: 992,
-              options: {
-                grid: {
-                  padding: {
-                    right: -69,
-                  }
-                },
-              },
-            },
-            {
-              breakpoint: 767,
-              options: {
-                chart: {
-                  height: 200,
-                }
-              },
-            },
-            {
-              breakpoint: 576,
-              options: {
-                yaxis: {
-                  labels: {
-                    show: false,
-                  },
-                },
-              },
-            }
-          ],
-          yaxis: {
-            labels: {
-              formatter: function (value: number) {
-                return currencySymbolPipe.transform(value);
-              }
-            },
-          },
-          xaxis: {
-            categories: revenue.months,
-            range: undefined,
-            axisBorder: {
-              offsetX: 0,
-              show: false,
-            },
-            axisTicks: {
-              show: false,
-            },
-          },
-        };
+  public loadDashboardData(): void {
+    this.isLoadingStats = true;
+    this.hasError = false;
+
+    // Try to load real data, but always fall back to demo data
+    forkJoin({
+      enrollmentStats: this.apiService.getEnrollmentStatistics().pipe(
+        catchError(error => {
+          console.error('Error loading enrollment statistics:', error);
+          return of(null);
+        })
+      ),
+      revenueSummary: this.apiService.getRevenueSummary().pipe(
+        catchError(error => {
+          console.error('Error loading revenue summary:', error);
+          return of(null);
+        })
+      ),
+      monthlyRevenue: this.apiService.getMonthlyRevenueBreakdown().pipe(
+        catchError(error => {
+          console.error('Error loading monthly revenue:', error);
+          return of(null);
+        })
+      )
+    }).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (data) => {
+        this.isLoadingStats = false;
+        
+        let hasRealData = false;
+
+        if (data.enrollmentStats?.success) {
+          this.enrollmentStatistics = data.enrollmentStats.data;
+          this.updateEnrollmentMetrics();
+          hasRealData = true;
+        }
+
+        if (data.revenueSummary?.success) {
+          this.revenueSummary = data.revenueSummary.data;
+          this.updateRevenueMetrics();
+          hasRealData = true;
+        }
+
+        if (data.monthlyRevenue?.success) {
+          this.monthlyRevenueData = data.monthlyRevenue.data;
+          this.updateCharts();
+          hasRealData = true;
+        }
+
+        if (hasRealData) {
+          this.isDemoMode = false;
+        } else {
+          // Keep demo mode if no real data was loaded
+          this.isDemoMode = true;
+          this.errorMessage = 'API non disponible. Affichage des données de démonstration.';
+        }
+      },
+      error: (error) => {
+        console.error('Error loading dashboard data:', error);
+        this.isLoadingStats = false;
+        this.hasError = true;
+        this.errorMessage = 'Erreur lors du chargement des données. Utilisation des données de démonstration.';
+        this.isDemoMode = true;
       }
     });
+  }
 
-    // For Order
-    this.order$.subscribe(order => {
-      this.orderTableConfig.data = order ? order?.data : [];
-      this.orderTableConfig.total = order ? order?.total : 0;
-    });
+  private updateEnrollmentMetrics(): void {
+    if (this.enrollmentStatistics?.summary) {
+      this.totalEnrollments = this.enrollmentStatistics.summary.total_enrollments || 0;
+      this.activeEnrollments = this.enrollmentStatistics.summary.active_enrollments || 0;
+    }
+  }
 
-    this.order$.subscribe(order => {
-      let orders = order?.data?.filter((element: Order) => {
-        element.order_id = `<span class="fw-bolder">#${element.order_number}</span>`;
-        element.order_payment_status = element.payment_status ? `<div class="status-${element.payment_status.toLowerCase()}"><span>${element.payment_status.replace(/_/g, " ")}</span></div>` : '-';
-        element.consumer_name = `<span class="text-capitalize">${element?.consumer?.name}</span>`;
-        return element;
-      });
-      this.orderTableConfig.data = order ? orders : [];
-      this.orderTableConfig.total = order ? order?.total : 0;
-    });
+  private updateRevenueMetrics(): void {
+    if (this.revenueSummary?.summary) {
+      this.totalRevenue = this.revenueSummary.summary.total_revenue || 0;
+      this.charityAmount = this.revenueSummary.summary.charity_amount || 0;
+    }
+  }
 
-    // For Product
-    this.product$.subscribe(product => {
-      let products = product?.data?.filter((element: Product) => {
-        element.stock = element.stock_status ? `<div class="status-${element.stock_status}"><span>${element.stock_status.replace(/_/g, " ")}</span></div>` : '-';
-        return element;
-      });
-      this.productStockTableConfig.data = product ? products : [];
-      this.productStockTableConfig.total = product ? product?.total : 0;
-    });
+  private updateCharts(): void {
+    if (!this.monthlyRevenueData?.monthly_data) return;
 
-    // For Store
-    this.store$.subscribe(store => {
-      this.sellerTableConfig.data  = store ? store?.data : [];
-      this.sellerTableConfig.total = store  ? store?.total : 0;
-    });
+    const months = this.monthlyRevenueData.monthly_data.map(item => item.month || 'N/A');
+    const revenues = this.monthlyRevenueData.monthly_data.map(item => item.total_revenue || 0);
+    const charityAmounts = this.monthlyRevenueData.monthly_data.map(item => item.charity_amount || 0);
 
-    // Subscribe to statistics for donation calculation
-    this.statistics$.subscribe(stats => {
-      this.currentStatistics = stats;
-    });
+    // Ensure chartOptions exists before updating
+    if (!this.chartOptions) {
+      this.initializeCharts();
+    }
 
-    // Price Tracking Chart (Line Chart) - Updated with transparent background
-    this.priceTrackingChart = {
+    this.chartOptions = {
+      ...this.chartOptions,
       series: [
         {
-          name: "Prix des cours",
-          data: [80, 90, 95, 85, 100, 95, 110, 105, 115, 110, 120, 115], // Course prices in DT
+          name: "Revenue Total",
+          data: revenues,
           color: '#0da487',
         },
         {
-          name: "Prix moyen marché",
-          data: [85, 95, 100, 90, 105, 100, 115, 110, 120, 115, 125, 120], // Market average in DT
+          name: "Dons (3%)",
+          data: charityAmounts,
           color: '#FFA53B',
         },
       ],
-      chart: {
-        height: 350,
-        type: "line",
-        background: 'transparent',
-        zoom: {
-          enabled: false
-        }
-      },
-      dataLabels: {
-        enabled: false
-      },
-      stroke: {
-        curve: 'smooth',
-        width: 3,
-      },
-      title: {
-        text: 'Suivi des Prix (DT)',
-        align: 'left'
-      },
-      grid: {
-        row: {
-          colors: ['transparent', 'transparent'],
-          opacity: 0.1
-        },
-      },
       xaxis: {
-        categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'],
-      }
-    };
-
-    // Donations Chart (Bar Chart) - Updated with transparent background
-    this.donationsChart = {
-      series: [
-        {
-          name: "Dons reçus",
-          data: [375, 400, 350, 425, 450, 475, 390, 520, 480, 550, 620, 580], // Monthly donations based on 3% of revenue
-          color: '#28a745',
-        }
-      ],
-      chart: {
-        height: 350,
-        type: "bar",
-        background: 'transparent',
-      },
-      dataLabels: {
-        enabled: false
-      },
-      title: {
-        text: 'Suivi des Dons (DT)',
-        align: 'left'
-      },
-      grid: {
-        row: {
-          colors: ['transparent', 'transparent'],
-          opacity: 0.1
-        },
-      },
-      xaxis: {
-        categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'],
-      }
-    };
-
-    // Teachers Chart (Pie Chart) - Updated with transparent background
-    this.teachersChart = {
-      series: [45, 30, 15, 10],
-      chart: {
-        type: 'pie',
-        height: 350,
-        background: 'transparent'
-      },
-      labels: ['Professeurs Actifs', 'Professeurs Inactifs', 'Nouveaux Professeurs', 'En Formation'],
-      colors: ['#0da487', '#FFA53B', '#dc3545', '#6c757d'],
-      legend: {
-        position: 'bottom'
-      },
-      dataLabels: {
-        enabled: true,
-        formatter: function (val: number) {
-          return val.toFixed(1) + "%"
-        }
-      },
-      responsive: [{
-        breakpoint: 480,
-        options: {
-          chart: {
-            width: 200
-          },
-          legend: {
-            position: 'bottom'
-          }
-        }
-      }]
-    };
-
-    // Students Chart (Area Chart) - Updated with transparent background
-    this.studentsChart = {
-      series: [
-        {
-          name: "Nouveaux étudiants",
-          data: [45, 52, 38, 65, 49, 75, 68, 82, 76, 95, 88, 102],
-          color: '#007bff',
-        },
-        {
-          name: "Étudiants actifs",
-          data: [320, 335, 342, 358, 365, 378, 385, 392, 398, 405, 412, 420],
-          color: '#28a745',
-        }
-      ],
-      chart: {
-        height: 350,
-        type: "area",
-        background: 'transparent',
-        zoom: {
-          enabled: false
-        }
-      },
-      dataLabels: {
-        enabled: false
-      },
-      stroke: {
-        curve: 'smooth',
-        width: 2,
-      },
-      fill: {
-        type: 'gradient',
-        gradient: {
-          shadeIntensity: 1,
-          opacityFrom: 0.7,
-          opacityTo: 0.3,
-        }
-      },
-      title: {
-        text: 'Suivi des Étudiants',
-        align: 'left'
-      },
-      grid: {
-        row: {
-          colors: ['transparent', 'transparent'],
-          opacity: 0.1
-        },
-      },
-      xaxis: {
-        categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'],
+        categories: months
       }
     };
   }
 
-  ngOnInit() {
-    this.store.dispatch(new GetStatisticsCount());
-    this.store.dispatch(new GetRevenueChart());
-    this.store.dispatch(new GetProducts({ status: 1, top_selling: 1, filter_by: 'this_year', paginate: 5}));
-    this.store.dispatch(new GetReviews({ paginate: 5 }));
-    this.store.dispatch(new GetBlogs({ status: 1, paginate: 2 }));
-    this.store.dispatch(new GetCategories({ type: 'product', status: 1 }));
+  private enableDemoMode(): void {
+    this.isDemoMode = true;
+    
+    // Set demo data
+    this.totalEnrollments = 1250;
+    this.activeEnrollments = 980;
+    this.totalRevenue = 45600;
+    this.charityAmount = 1368; // 3% of total revenue
+
+    // Ensure chart is initialized with demo data
+    this.initializeCharts();
   }
 
-  filterTopProduct(data: Select2UpdateEvent) {
-    this.topProductLoader = true;
-    this.renderer.addClass(this.document.body, 'loader-none');
-    let params: Params = { status: 1, top_selling: 1, filter_by: 'this_year', paginate: 5 };
-    if(data.value) {
-      params['filter_by'] = data.value;
-    }
-    this.store.dispatch(new GetProducts(params)).subscribe({
-      complete: () => { this.topProductLoader = false }
-    });
+  public refreshData(): void {
+    this.loadDashboardData();
   }
 
-  // For Order
-
-  onOrderTableChange(data?: Params) {
-    if(data) {
-      data['paginate'] = 7;
-    }
-    this.store.dispatch(new GetOrders(data!));
+  public formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR'
+    }).format(amount || 0);
   }
 
-  onOrderActionClicked(action: TableClickedAction) {
-    if(action.actionToPerform == 'view')
-      this.orderView(action.data)
+  public formatNumber(num: number): string {
+    return new Intl.NumberFormat('fr-FR').format(num || 0);
   }
 
-  orderView(data: Order) {
-    this.router.navigateByUrl(`/order/details/${data.order_number}`);
+  public getCharityPercentage(): number {
+    return 3; // Fixed 3% for charity
   }
-
-  // For Products
-
-  onProductTableChange(data?: Params) {
-    if(data) {
-      data['paginate'] = 8;
-      data['field'] = 'quantity';
-      data['sort'] = 'asc';
-    }
-    this.store.dispatch(new GetProducts(data)).subscribe({
-      complete: () => {
-        this.productStockLoader = false;
-      }
-    });
-  }
-
-  filterProduct(data: Select2UpdateEvent) {
-    this.renderer.addClass(this.document.body, 'loader-none');
-    let params: Params = {
-      paginate: 8,
-      field: 'quantity',
-      sort: 'asc'
-    };
-    if(data.value) {
-      params['category_ids'] = data.value;
-    }
-    this.productStockLoader = true;
-    this.onProductTableChange(params);
-  }
-
-  onProductActionClicked(action: TableClickedAction) {
-    if(action.actionToPerform == 'edit')
-      this.productEdit(action.data)
-  }
-
-  productEdit(data: Product) {
-    this.router.navigateByUrl(`/product/edit/${data.id}`);
-  }
-
-  // For Seller
-
-  onSellerTableChange(data?: Params) {
-    if(data && !data['filter_by']) {
-      data['paginate'] = 6;
-      data['top_vendor'] = 1;
-      data['filter_by'] = 'this_year';
-    }
-    this.store.dispatch(new GetStores(data)).subscribe({
-      complete: () => {
-        this.topSellerLoader = false;
-      }
-    });
-  }
-
-  filterSeller(data: Select2UpdateEvent) {
-    this.renderer.addClass(this.document.body, 'loader-none');
-    let params: Params = {
-      paginate: 6,
-      top_vendor: 1,
-      filter_by: 'this_year'
-    };
-    if(data.value) {
-      params['filter_by'] = data.value;
-    }
-    this.topSellerLoader = true;
-    this.onSellerTableChange(params);
-  }
-
-  redirectToProduct(id: number) {
-    this.router.navigate(['/product/edit', id]);
-  }
-
-  ngOnDestroy() {
-    this.renderer.removeClass(this.document.body, 'loader-none');
-  }
-
-  // New methods for dashboard calculations
-  getDonationAmount(): number {
-    // Calculate 3% of fake revenue (15,000 DT)
-    return this.fakeRevenue * 0.03; // 450 DT
-  }
-
-  getTotalRoles(): number {
-    return this.totalRoles;
-  }
-
-  getActiveUsers(): string {
-    return (this.activeUsers / 1000000).toFixed(1) + 'M';
-  }
-
-  getNewUsers(): string {
-    return (this.newUsers / 1000).toFixed(1) + 'K';
-  }
-
-  // Fake financial data methods
-  getFakeRevenue(): number {
-    return this.fakeRevenue;
-  }
-
-  getFakeOrders(): number {
-    return this.fakeOrders;
-  }
-
-  getFakeSchools(): number {
-    return this.fakeSchools;
-  }
-
-}
+} 

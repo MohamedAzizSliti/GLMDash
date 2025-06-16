@@ -1,171 +1,117 @@
 <!-- notice section -->
 <section>
     <div class="container-fluid">
-        <!-- <div class="notice-section">
-            <div class="notice-content">
-                <div class="icon-box">
-                    <i class="ri-file-text-line"></i>
-                </div>
-                <div class="notice-box">
-                    <h3>Notice title</h3>
-                    <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been
-                        the industry's standard dummy</p>
-                </div>
-            </div>
-            <a class="close-icon"><i class="ri-close-line"></i></a>
-        </div> -->
+        <!-- Notice content can be added here if needed -->
     </div>
 </section>
-<!-- notice section -->
 
-<!-- tiles section -->
+<!-- Dynamic Dashboard -->
 <section class="dashboard-tiles">
     <div class="container-fluid">
-        <div class="row g-3" *ngIf="( user$ | async )?.role?.name !== 'vendor'">
-            <div class="col-xl-3 col-sm-6">
-                <div class="card-tiles">
-                    <div>
-                        <h6>{{ 'total_revenue' | translate }}</h6>
-                        <h3>{{ getFakeRevenue() | currencySymbol }}</h3>
-                        <small class="text-success">Données de démonstration</small>
-                    </div>
-                    <div class="icon-box">
-                        <i class="ri-wallet-line"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-sm-6">
-                <div class="card-tiles">
-                    <div>
-                        <h6>{{ 'total_orders' | translate }}</h6>
-                        <h3>{{ getFakeOrders() }}</h3>
-                        <small class="text-info">Commandes simulées</small>
-                    </div>
-                    <div class="icon-box">
-                        <i class="ri-file-text-line"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-sm-6">
-                <div class="card-tiles">
-                    <div>
-                        <h6>{{ 'total_school' | translate }}</h6>
-                        <h3>{{ getFakeSchools() }}</h3>
-                        <small class="text-warning">Écoles partenaires</small>
-                    </div>
-                    <div class="icon-box">
-                        <i class="ri-box-3-line"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-sm-6">
-                <div class="card-tiles">
-                    <div>
-                        <h6>{{ 'total_user' | translate }}</h6>
-                        <h3>15M</h3>
-                        <small class="text-muted">Utilisateurs avec rôles</small>
-                    </div>
-                    <div class="icon-box">
-                        <i class="ri-group-line"></i>
-                    </div>
+        <!-- Error Alert -->
+        <div class="row" *ngIf="hasError">
+            <div class="col-12">
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <i class="ri-alert-line me-2"></i>{{ errorMessage }}
+                    <button type="button" class="btn-close" (click)="hasError = false"></button>
                 </div>
             </div>
         </div>
-        
-        <!-- Additional row for donation tracking -->
-        <div class="row g-3 mt-3" *ngIf="( user$ | async )?.role?.name !== 'vendor'">
+
+        <!-- Main Dashboard Tiles -->
+        <div class="row g-3">
             <div class="col-xl-3 col-sm-6">
-                <div class="card-tiles donation-tile">
+                <div class="card-tiles">
                     <div>
                         <h6>Dons (3% du revenu)</h6>
-                        <h3>{{ getDonationAmount() | currencySymbol }}</h3>
-                        <small class="text-success">450 DT automatique</small>
+                        <h3 *ngIf="!isLoadingStats">{{ formatCurrency(charityAmount) }}</h3>
+                        <div *ngIf="isLoadingStats" class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                        <small class="text-success">
+                            {{ getCharityPercentage().toFixed(1) }}% automatique
+                        </small>
                     </div>
                     <div class="icon-box">
                         <i class="ri-hand-heart-line"></i>
                     </div>
                 </div>
             </div>
+            
             <div class="col-xl-3 col-sm-6">
                 <div class="card-tiles">
                     <div>
-                        <h6>Rôles Utilisateurs</h6>
-                        <h3>{{ getTotalRoles() }}</h3>
-                        <small class="text-info">Admin, Prof, Étudiant</small>
-                    </div>
-                    <div class="icon-box">
-                        <i class="ri-user-settings-line"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-sm-6">
-                <div class="card-tiles">
-                    <div>
-                        <h6>Utilisateurs Actifs</h6>
-                        <h3>{{ getActiveUsers() }}</h3>
-                        <small class="text-primary">Dernières 24h</small>
-                    </div>
-                    <div class="icon-box">
-                        <i class="ri-user-star-line"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-sm-6">
-                <div class="card-tiles">
-                    <div>
-                        <h6>Nouveaux Inscrits</h6>
-                        <h3>{{ getNewUsers() }}</h3>
-                        <small class="text-warning">Cette semaine</small>
+                        <h6>Total Inscriptions</h6>
+                        <h3 *ngIf="!isLoadingStats">{{ formatNumber(totalEnrollments) }}</h3>
+                        <div *ngIf="isLoadingStats" class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                        <small class="text-info">
+                            {{ formatNumber(activeEnrollments) }} actives
+                        </small>
                     </div>
                     <div class="icon-box">
                         <i class="ri-user-add-line"></i>
                     </div>
                 </div>
             </div>
+            
+            <div class="col-xl-3 col-sm-6">
+                <div class="card-tiles">
+                    <div>
+                        <h6>Revenus Total</h6>
+                        <h3 *ngIf="!isLoadingStats">{{ formatCurrency(totalRevenue) }}</h3>
+                        <div *ngIf="isLoadingStats" class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                        <small class="text-primary">
+                            Toutes périodes
+                        </small>
+                    </div>
+                    <div class="icon-box">
+                        <i class="ri-money-dollar-circle-line"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-sm-6">
+                <div class="card-tiles">
+                    <div>
+                        <h6>Inscriptions Actives</h6>
+                        <h3 *ngIf="!isLoadingStats">{{ formatNumber(activeEnrollments) }}</h3>
+                        <div *ngIf="isLoadingStats" class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                        <small class="text-warning">
+                            En cours
+                        </small>
+                    </div>
+                    <div class="icon-box">
+                        <i class="ri-user-star-line"></i>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="row" *ngIf="( user$ | async )?.role?.name === 'vendor'">
-            <div class="col-3">
-                <div class="card-tiles">
-                    <div>
-                        <h6>{{ 'total_revenue' | translate }}</h6>
-                        <h3>{{ (statistics$ | async)?.total_revenue | currencySymbol }}</h3>
+        <!-- Data refresh button -->
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <button class="btn btn-outline-primary btn-sm me-2" 
+                                (click)="refreshData()" 
+                                [disabled]="isLoadingStats">
+                            <i class="ri-refresh-line" [class.fa-spin]="isLoadingStats"></i>
+                            Actualiser les données
+                        </button>
                     </div>
-                    <div class="icon-box">
-                        <i class="ri-wallet-line"></i>
+                    <div class="badge bg-success" *ngIf="!isLoadingStats && !isDemoMode">
+                        <i class="ri-database-2-line me-1"></i>
+                        Données en temps réel
                     </div>
-                </div>
-            </div>
-            <div class="col-3">
-                <div class="card-tiles">
-                    <div>
-                        <h6>{{ 'total_orders' | translate }}</h6>
-                        <h3>{{ (statistics$ | async)?.total_orders }}</h3>
-                    </div>
-                    <div class="icon-box">
-                        <i class="ri-file-text-line"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-3">
-                <div class="card-tiles">
-                    <div>
-                        <h6>{{ 'total_product' | translate }}</h6>
-                        <h3>{{ (product$ | async)?.total }}</h3>
-                    </div>
-                    <div class="icon-box">
-                        <i class="ri-box-3-line"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-3">
-                <div class="card-tiles">
-                    <div>
-                        <h6>{{ 'total_balance' | translate }}</h6>
-                        <h3>{{ ( user$ | async )?.vendor_wallet?.balance }}</h3>
-                    </div>
-                    <div class="icon-box">
-                        <i class="ri-group-line"></i>
+                    <div class="badge bg-warning" *ngIf="!isLoadingStats && isDemoMode">
+                        <i class="ri-alert-line me-1"></i>
+                        Données de démonstration
                     </div>
                 </div>
             </div>
@@ -173,98 +119,44 @@
     </div>
 </section>
 
-<!-- Tracking Charts Section -->
-<section class="tracking-charts">
+<!-- chart section -->
+<section class="chart-section">
     <div class="container-fluid">
-        <div class="row g-4 mt-4">
-            <!-- Price Tracking Chart -->
-            <div class="col-xl-6 col-lg-12">
-                <div class="card transparent-chart">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
                     <div class="card-header">
-                        <h5 class="card-title">
-                            <i class="ri-line-chart-line me-2"></i>
-                            Suivi des Prix
-                        </h5>
+                        <h5>Revenus et Contributions Caritatives</h5>
+                        <div class="card-header-right">
+                            <small class="text-muted">
+                                *Les dons représentent 3% du revenu total
+                            </small>
+                        </div>
                     </div>
                     <div class="card-body">
-                        <apx-chart
-                            [series]="priceTrackingChart.series"
-                            [chart]="priceTrackingChart.chart"
-                            [xaxis]="priceTrackingChart.xaxis"
-                            [stroke]="priceTrackingChart.stroke"
-                            [dataLabels]="priceTrackingChart.dataLabels"
-                            [grid]="priceTrackingChart.grid"
-                            [title]="priceTrackingChart.title">
-                        </apx-chart>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Donations Tracking Chart -->
-            <div class="col-xl-6 col-lg-12">
-                <div class="card transparent-chart">
-                    <div class="card-header">
-                        <h5 class="card-title">
-                            <i class="ri-hand-heart-line me-2"></i>
-                            Suivi des Dons
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <apx-chart
-                            [series]="donationsChart.series"
-                            [chart]="donationsChart.chart"
-                            [xaxis]="donationsChart.xaxis"
-                            [dataLabels]="donationsChart.dataLabels"
-                            [grid]="donationsChart.grid"
-                            [title]="donationsChart.title">
-                        </apx-chart>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Teachers Tracking Chart -->
-            <div class="col-xl-6 col-lg-12">
-                <div class="card transparent-chart">
-                    <div class="card-header">
-                        <h5 class="card-title">
-                            <i class="ri-user-3-line me-2"></i>
-                            Suivi des Professeurs
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <apx-chart
-                            [series]="teachersChart.series"
-                            [chart]="teachersChart.chart"
-                            [labels]="teachersChart.labels"
-                            [colors]="teachersChart.colors"
-                            [legend]="teachersChart.legend"
-                            [dataLabels]="teachersChart.dataLabels"
-                            [responsive]="teachersChart.responsive">
-                        </apx-chart>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Students Tracking Chart -->
-            <div class="col-xl-6 col-lg-12">
-                <div class="card transparent-chart">
-                    <div class="card-header">
-                        <h5 class="card-title">
-                            <i class="ri-graduation-cap-line me-2"></i>
-                            Suivi des Étudiants
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <apx-chart
-                            [series]="studentsChart.series"
-                            [chart]="studentsChart.chart"
-                            [xaxis]="studentsChart.xaxis"
-                            [stroke]="studentsChart.stroke"
-                            [dataLabels]="studentsChart.dataLabels"
-                            [fill]="studentsChart.fill"
-                            [grid]="studentsChart.grid"
-                            [title]="studentsChart.title">
-                        </apx-chart>
+                        <div *ngIf="isLoadingStats" class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Chargement du graphique...</span>
+                            </div>
+                        </div>
+                        <div *ngIf="!isLoadingStats && chartOptions && chartOptions.series">
+                            <apx-chart
+                                #chart
+                                [series]="chartOptions.series"
+                                [chart]="chartOptions.chart"
+                                [xaxis]="chartOptions.xaxis"
+                                [stroke]="chartOptions.stroke"
+                                [dataLabels]="chartOptions.dataLabels"
+                                [grid]="chartOptions.grid"
+                                [legend]="chartOptions.legend">
+                            </apx-chart>
+                        </div>
+                        <div *ngIf="!isLoadingStats && (!chartOptions || !chartOptions.series)" class="text-center py-4">
+                            <div class="text-muted">
+                                <i class="ri-bar-chart-line fs-2 mb-2"></i>
+                                <p>Aucune donnée de graphique disponible</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -272,3 +164,71 @@
     </div>
 </section>
 
+<!-- Statistics Summary -->
+<section class="statistics-section">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Résumé des Inscriptions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div *ngIf="enrollmentStatistics" class="statistics-list">
+                            <div class="stat-item">
+                                <span class="label">Total des inscriptions:</span>
+                                <span class="value">{{ formatNumber(enrollmentStatistics.total_enrollments || 0) }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="label">Inscriptions actives:</span>
+                                <span class="value text-success">{{ formatNumber(enrollmentStatistics.active_enrollments || 0) }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="label">En attente:</span>
+                                <span class="value text-warning">{{ formatNumber(enrollmentStatistics.pending_enrollments || 0) }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="label">Annulées:</span>
+                                <span class="value text-danger">{{ formatNumber(enrollmentStatistics.cancelled_enrollments || 0) }}</span>
+                            </div>
+                        </div>
+                        <div *ngIf="!enrollmentStatistics && !isLoadingStats" class="text-muted">
+                            Aucune donnée d'inscription disponible
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Résumé des Revenus</h5>
+                    </div>
+                    <div class="card-body">
+                        <div *ngIf="revenueSummary" class="statistics-list">
+                            <div class="stat-item">
+                                <span class="label">Revenu total:</span>
+                                <span class="value">{{ formatCurrency(revenueSummary.total_revenue || 0) }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="label">Contributions caritatives (3%):</span>
+                                <span class="value text-success">{{ formatCurrency(revenueSummary.charity_amount || 0) }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="label">Frais de plateforme:</span>
+                                <span class="value text-info">{{ formatCurrency(revenueSummary.platform_fees || 0) }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="label">Gains des instructeurs:</span>
+                                <span class="value text-primary">{{ formatCurrency(revenueSummary.instructor_earnings || 0) }}</span>
+                            </div>
+                        </div>
+                        <div *ngIf="!revenueSummary && !isLoadingStats" class="text-muted">
+                            Aucune donnée de revenu disponible
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section> 

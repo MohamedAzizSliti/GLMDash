@@ -1,4 +1,8 @@
 import {
+  LoadingBarModule,
+  LoadingBarService
+} from "./chunk-DGUNCIOB.js";
+import {
   NavigationCancel,
   NavigationEnd,
   NavigationError,
@@ -8,10 +12,6 @@ import {
 } from "./chunk-MW4ZUJH7.js";
 import "./chunk-UGFGWA6K.js";
 import "./chunk-LXGZVCY2.js";
-import {
-  LoadingBarModule,
-  LoadingBarService
-} from "./chunk-DGUNCIOB.js";
 import "./chunk-WBAK7G52.js";
 import {
   NgModule,

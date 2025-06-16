@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  URL: 'https://gold-lms.online/admin/api',
+  URL: 'http://localhost:8000/admin/api',
 };
 
 /*

@@ -84,6 +84,8 @@ export const menu: Menu[] = [
         }
       ],
     },
+  // Hidden menu items as requested
+  /*
   {
     id: 3,
     title: "courses",
@@ -186,6 +188,7 @@ export const menu: Menu[] = [
       level: 1,
       permission: ["attachment.index"]
     },
+    */
     {
       id: 8,
       title: "blog",

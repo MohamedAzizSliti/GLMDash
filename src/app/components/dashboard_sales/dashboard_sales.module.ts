@@ -12,6 +12,7 @@ import { CategoryState } from '../../shared/state/category.state';
 import { StoreState } from '../../shared/state/store.state';
 import {Dashboard_salesComponent} from './dashboard_sales.component';
 import {Dashboard_salesRoutingModule} from './dashboard_sales-routing.module';
+import { ApiService } from '../../shared/services/api.service';
 
 @NgModule({
   declarations: [
@@ -29,6 +30,9 @@ import {Dashboard_salesRoutingModule} from './dashboard_sales-routing.module';
       CategoryState,
       StoreState
     ]),
+  ],
+  providers: [
+    ApiService
   ]
 })
 export class Dashboard_salesModule { }
